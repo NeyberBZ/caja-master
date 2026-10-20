@@ -1,0 +1,208 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+<BaseLayout title="CajaMaster · Cuadre de caja">
+  <main class="mx-auto max-w-7xl px-4 py-6 md:px-8">
+    <header class="mb-8 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="grid h-11 w-11 place-items-center rounded-xl bg-purple-500/15 text-xl text-purple-300">◈</div>
+        <div><p class="text-xs uppercase tracking-[.22em] text-purple-300">CajaMaster</p><h1 class="text-2xl font-bold">Cuadre de caja</h1></div>
+      </div>
+      <div class="flex items-center gap-2 rounded-full border border-slate-700 px-3 py-2 text-sm">
+        <span id="connection-dot" class="h-2 w-2 rounded-full bg-amber-400"></span><span id="connection-status" class="muted">Supabase sin comprobar</span>
+      </div>
+    </header>
+
+    <nav class="mb-6 flex flex-wrap gap-2" aria-label="Secciones">
+      <button class="btn btn-primary" data-tab="dashboard">Dashboard</button>
+      <button class="btn btn-secondary" data-tab="movimientos">Movimientos</button>
+      <button class="btn btn-secondary" data-tab="arqueo">Arqueo y cierre</button>
+      <button class="btn btn-secondary" data-tab="respaldo">Respaldo Markdown</button>
+    </nav>
+
+    <section id="tab-dashboard" class="space-y-6">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div><p class="muted text-sm">Resumen de la sesión actual</p><h2 class="text-xl font-semibold">Control diario</h2></div>
+        <div class="flex gap-2"><button id="check-supabase" class="btn btn-secondary">Probar Supabase</button><button id="open-cash" class="btn btn-primary">Abrir caja</button></div>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <article class="panel p-5"><p class="muted text-sm">Fondo inicial</p><p id="stat-fondo" class="mt-3 text-2xl font-bold">S/ 0.00</p></article>
+        <article class="panel p-5"><p class="muted text-sm">Ventas del día</p><p id="stat-ventas" class="mt-3 text-2xl font-bold">S/ 0.00</p></article>
+        <article class="panel p-5"><p class="muted text-sm">Egresos</p><p id="stat-egresos" class="mt-3 text-2xl font-bold">S/ 0.00</p></article>
+        <article class="panel p-5"><p class="muted text-sm">Efectivo esperado</p><p id="stat-efectivo" class="mt-3 text-2xl font-bold text-purple-300">S/ 0.00</p></article>
+      </div>
+      <div class="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+        <article class="panel p-5">
+          <div class="mb-4 flex items-center justify-between"><h3 class="font-semibold">Movimientos recientes</h3><span id="movement-count" class="muted text-sm">0 registros</span></div>
+          <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead class="muted border-b border-slate-700"><tr><th class="py-3 pr-3">Tipo</th><th class="py-3 pr-3">Detalle</th><th class="py-3 pr-3">Medio</th><th class="py-3 text-right">Monto</th></tr></thead><tbody id="recent-rows"><tr><td colspan="4" class="py-8 text-center muted">Abre la caja y registra el primer movimiento.</td></tr></tbody></table></div>
+        </article>
+        <article class="panel p-5"><h3 class="mb-4 font-semibold">Distribución de ventas</h3><div id="payment-summary" class="space-y-4"><p class="muted text-sm">Los importes por medio de pago aparecerán aquí.</p></div><p class="mt-5 text-xs muted">Los pagos digitales no se suman al efectivo físico esperado.</p></article>
+      </div>
+    </section>
+
+    <section id="tab-movimientos" class="hidden space-y-5">
+      <div><p class="muted text-sm">Ventas y salidas de dinero</p><h2 class="text-xl font-semibold">Registrar movimiento</h2></div>
+      <form id="movement-form" class="panel grid gap-4 p-5 md:grid-cols-2">
+        <label class="text-sm">Tipo<select id="movement-type" class="field mt-2"><option value="venta">Venta</option><option value="egreso">Egreso</option></select></label>
+        <label class="text-sm">Monto (S/)<input id="movement-amount" class="field mt-2" type="number" min="0.01" step="0.01" required placeholder="0.00" /></label>
+        <label class="text-sm">Descripción<input id="movement-description" class="field mt-2" maxlength="160" required placeholder="Ej. Venta mostrador / compra de bolsas" /></label>
+        <label class="text-sm">Medio de pago / salida<select id="movement-method" class="field mt-2"><option value="efectivo">Efectivo</option><option value="yape">Yape</option><option value="plin">Plin</option><option value="tarjeta">Tarjeta</option><option value="transferencia">Transferencia</option></select></label>
+        <label id="category-wrap" class="hidden text-sm md:col-span-2">Categoría<select id="movement-category" class="field mt-2"><option value="mercaderia">Mercadería</option><option value="transporte">Transporte</option><option value="servicios">Servicios</option><option value="alimentacion">Alimentación</option><option value="otros">Otros</option></select></label>
+        <div class="md:col-span-2"><button class="btn btn-primary" type="submit">Guardar movimiento</button><p id="movement-message" class="mt-3 text-sm muted" role="status"></p></div>
+      </form>
+      <div class="panel overflow-x-auto p-5"><table class="w-full min-w-[600px] text-left text-sm"><thead class="muted border-b border-slate-700"><tr><th class="py-3">Hora</th><th>Tipo</th><th>Descripción</th><th>Medio</th><th class="text-right">Monto</th></tr></thead><tbody id="all-rows"></tbody></table></div>
+    </section>
+
+    <section id="tab-arqueo" class="hidden space-y-5">
+      <div><p class="muted text-sm">Compara el sistema con el efectivo contado</p><h2 class="text-xl font-semibold">Arqueo y cierre</h2></div>
+      <div class="panel grid gap-5 p-5 md:grid-cols-2">
+        <label class="text-sm">Efectivo contado físicamente (S/)<input id="cash-count" class="field mt-2" type="number" min="0" step="0.01" placeholder="0.00" /></label>
+        <div><p class="muted text-sm">Efectivo esperado</p><p id="expected-cash" class="mt-2 text-2xl font-bold">S/ 0.00</p></div>
+        <div class="rounded-xl bg-slate-900 p-4"><p class="muted text-sm">Diferencia (contado − esperado)</p><p id="cash-difference" class="mt-2 text-2xl font-bold">S/ 0.00</p><p id="difference-label" class="mt-1 text-sm muted">Ingresa el conteo físico.</p></div>
+        <div class="flex flex-col justify-center gap-2"><button id="close-cash" class="btn btn-primary">Cerrar y generar reporte</button><p id="close-message" class="text-sm muted" role="status"></p></div>
+      </div>
+    </section>
+
+    <section id="tab-respaldo" class="hidden space-y-5">
+      <div><p class="muted text-sm">Exportación para guardar en tu repositorio</p><h2 class="text-xl font-semibold">Respaldo Markdown</h2></div>
+      <article class="panel p-5"><p class="mb-4 text-sm muted">Se descarga un archivo Markdown con apertura, movimientos, resumen de medios de pago y arqueo. Esta acción descarga el archivo en tu navegador; todavía no crea un commit automático en GitHub.</p><button id="download-report" class="btn btn-primary">Descargar reporte .md</button><p id="backup-message" class="mt-3 text-sm muted" role="status"></p></article>
+    </section>
+    <footer class="mt-10 border-t border-slate-800 pt-5 text-xs muted">CajaMaster · Montos en soles peruanos (PEN) · Los datos de esta versión se mantienen en memoria hasta recargar.</footer>
+  </main>
+
+  <dialog id="open-dialog" class="w-[min(92vw,440px)] rounded-2xl border border-slate-700 bg-[#161922] p-0 text-white backdrop:bg-black/70">
+    <form id="open-form" class="space-y-4 p-6"><h2 class="text-xl font-bold">Apertura de caja</h2><p class="text-sm muted">Registra el efectivo inicial disponible en el cajón.</p><label class="block text-sm">Fondo inicial (S/)<input id="opening-fund" class="field mt-2" type="number" min="0" step="0.01" value="0" required /></label><div class="flex justify-end gap-2"><button type="button" id="cancel-open" class="btn btn-secondary">Cancelar</button><button class="btn btn-primary" type="submit">Confirmar apertura</button></div></form>
+  </dialog>
+
+  <script>
+    import { getSupabaseClient } from "../lib/supabase";
+
+    type Movement = { id: string; type: "venta" | "egreso"; amount: number; description: string; method: string; category: string; createdAt: string };
+    let openingFund = 0;
+    let opened = false;
+    let closed = false;
+    let movements: Movement[] = [];
+    let report: string | null = null;
+    const money = (n: number) => new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(n);
+    const $ = (id: string) => document.getElementById(id)!;
+    const sum = (items: Movement[]) => items.reduce((total, item) => total + item.amount, 0);
+    const sales = () => movements.filter(m => m.type === "venta");
+    const expenses = () => movements.filter(m => m.type === "egreso");
+    const expectedCash = () => openingFund + sum(sales().filter(m => m.method === "efectivo")) - sum(expenses().filter(m => m.method === "efectivo"));
+    const safe = (value: string) => value.replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[char]!));
+
+    function renderRows(target: string, items: Movement[]) {
+      const tbody = $(target);
+      if (!items.length) { tbody.innerHTML = '<tr><td colspan="5" class="py-7 text-center muted">No hay movimientos registrados.</td></tr>'; return; }
+      tbody.innerHTML = items.slice().reverse().map(m => `<tr class="border-b border-slate-800"><td class="py-3 pr-3 muted">${new Date(m.createdAt).toLocaleTimeString("es-PE",{hour:"2-digit",minute:"2-digit"})}</td><td class="py-3 pr-3">${m.type === "venta" ? "Venta" : "Egreso"}</td><td class="py-3 pr-3">${safe(m.description)}${m.category ? `<span class="block text-xs muted">${safe(m.category)}</span>` : ""}</td><td class="py-3 pr-3">${safe(m.method)}</td><td class="py-3 text-right ${m.type === "venta" ? "text-emerald-300" : "text-orange-300"}">${m.type === "venta" ? "+" : "−"}${money(m.amount)}</td></tr>`).join("");
+    }
+
+    function render() {
+      $("stat-fondo").textContent = money(openingFund);
+      $("stat-ventas").textContent = money(sum(sales()));
+      $("stat-egresos").textContent = money(sum(expenses()));
+      $("stat-efectivo").textContent = money(expectedCash());
+      $("expected-cash").textContent = money(expectedCash());
+      $("movement-count").textContent = `${movements.length} registros`;
+      const recent = movements.slice(-5).reverse();
+      $("recent-rows").innerHTML = recent.length ? recent.map(m => `<tr class="border-b border-slate-800"><td class="py-3 pr-3">${m.type === "venta" ? "Venta" : "Egreso"}</td><td class="py-3 pr-3">${safe(m.description)}</td><td class="py-3 pr-3">${safe(m.method)}</td><td class="py-3 text-right">${money(m.amount)}</td></tr>`).join("") : '<tr><td colspan="4" class="py-8 text-center muted">Abre la caja y registra el primer movimiento.</td></tr>';
+      renderRows("all-rows", movements);
+      const methods = ["efectivo","yape","plin","tarjeta","transferencia"];
+      $("payment-summary").innerHTML = methods.map(method => {
+        const amount = sum(sales().filter(m => m.method === method));
+        const total = sum(sales());
+        const pct = total ? amount / total * 100 : 0;
+        return `<div><div class="mb-2 flex justify-between text-sm"><span>${method[0].toUpperCase()+method.slice(1)}</span><span>${money(amount)}</span></div><div class="h-2 overflow-hidden rounded-full bg-slate-800"><div class="h-full rounded-full bg-purple-400" style="width:${pct}%"></div></div></div>`;
+      }).join("");
+      const count = Number(($("cash-count") as HTMLInputElement).value);
+      const diff = ($("cash-count") as HTMLInputElement).value === "" ? null : count - expectedCash();
+      $("cash-difference").textContent = money(diff ?? 0);
+      $("cash-difference").className = `mt-2 text-2xl font-bold ${diff === null ? "" : diff < -0.005 ? "text-red-300" : diff > 0.005 ? "text-amber-300" : "text-emerald-300"}`;
+      $("difference-label").textContent = diff === null ? "Ingresa el conteo físico." : Math.abs(diff) < 0.005 ? "Caja cuadrada." : diff < 0 ? `Faltante de ${money(Math.abs(diff))}` : `Sobrante de ${money(diff)}`;
+      $("open-cash").textContent = closed ? "Caja cerrada" : opened ? "Caja abierta" : "Abrir caja";
+      ($("open-cash") as HTMLButtonElement).disabled = opened || closed;
+      ($("close-cash") as HTMLButtonElement).disabled = !opened || closed;
+      ($("movement-form").querySelector("button[type=submit]") as HTMLButtonElement).disabled = !opened || closed;
+    }
+
+    document.querySelectorAll<HTMLButtonElement>("[data-tab]").forEach(button => button.addEventListener("click", () => {
+      document.querySelectorAll("[data-tab]").forEach(b => b.className = b === button ? "btn btn-primary" : "btn btn-secondary");
+      ["dashboard","movimientos","arqueo","respaldo"].forEach(tab => $(`tab-${tab}`).classList.toggle("hidden", tab !== button.dataset.tab));
+    }));
+    $("open-cash").addEventListener("click", () => ($("open-dialog") as HTMLDialogElement).showModal());
+    $("cancel-open").addEventListener("click", () => ($("open-dialog") as HTMLDialogElement).close());
+    $("open-form").addEventListener("submit", event => {
+      event.preventDefault();
+      openingFund = Math.max(0, Number(($("opening-fund") as HTMLInputElement).value));
+      opened = true; closed = false; ($("open-dialog") as HTMLDialogElement).close(); render();
+    });
+    $("movement-type").addEventListener("change", () => {
+      const isExpense = ($("movement-type") as HTMLSelectElement).value === "egreso";
+      $("category-wrap").classList.toggle("hidden", !isExpense);
+    });
+    $("movement-form").addEventListener("submit", event => {
+      event.preventDefault();
+      if (!opened || closed) return;
+      const amount = Number(($("movement-amount") as HTMLInputElement).value);
+      const description = ($("movement-description") as HTMLInputElement).value.trim();
+      if (!Number.isFinite(amount) || amount <= 0 || !description) return;
+      const type = ($("movement-type") as HTMLSelectElement).value as "venta" | "egreso";
+      const method = ($("movement-method") as HTMLSelectElement).value;
+      if (type === "egreso" && method !== "efectivo" && !confirm("Este egreso no reducirá el efectivo físico esperado. ¿Confirmas el medio de salida seleccionado?")) return;
+      movements.push({ id: crypto.randomUUID(), type, amount, description, method, category: type === "egreso" ? ($("movement-category") as HTMLSelectElement).value : "", createdAt: new Date().toISOString() });
+      ($("movement-form") as HTMLFormElement).reset();
+      $("movement-type").dispatchEvent(new Event("change"));
+      $("movement-message").textContent = "Movimiento añadido a la sesión actual. En esta versión aún no se ha guardado en Supabase.";
+      render();
+    });
+    $("cash-count").addEventListener("input", render);
+    $("check-supabase").addEventListener("click", async () => {
+      const dot = $("connection-dot");
+      const status = $("connection-status");
+      const client = getSupabaseClient();
+      if (!client) { status.textContent = "Faltan variables de entorno"; dot.className = "h-2 w-2 rounded-full bg-amber-400"; return; }
+      status.textContent = "Comprobando…"; dot.className = "h-2 w-2 rounded-full bg-amber-400";
+      try {
+        const { error } = await client.from("caja_sessions").select("id", { head: true, count: "exact" }).limit(1);
+        if (error) throw error;
+        status.textContent = "API conectada · tabla accesible"; dot.className = "h-2 w-2 rounded-full bg-emerald-400";
+      } catch (error) {
+        status.textContent = error instanceof Error ? `Conexión: ${error.message}` : "No se pudo comprobar";
+        dot.className = "h-2 w-2 rounded-full bg-red-400";
+      }
+    });
+    $("close-cash").addEventListener("click", () => {
+      if (!opened || closed) return;
+      const countedInput = $("cash-count") as HTMLInputElement;
+      if (countedInput.value === "") { $("close-message").textContent = "Introduce el efectivo contado antes de cerrar."; return; }
+      const counted = Number(countedInput.value);
+      const expected = expectedCash();
+      const date = new Date();
+      const dateLocal = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+      const diff = counted - expected;
+      report = [
+        "---", `date: "${dateLocal}"`, 'title: "Cierre de caja"', `currency: "PEN"`, `opening_fund: ${openingFund.toFixed(2)}`,
+        `sales_total: ${sum(sales()).toFixed(2)}`, `expenses_total: ${sum(expenses()).toFixed(2)}`, `expected_cash: ${expected.toFixed(2)}`,
+        `counted_cash: ${counted.toFixed(2)}`, `difference: ${diff.toFixed(2)}`, "---", "",
+        `# Cierre de caja — ${dateLocal}`, "", "## Resumen", "",
+        `- Fondo inicial: ${money(openingFund)}`, `- Ventas totales: ${money(sum(sales()))}`, `- Egresos totales: ${money(sum(expenses()))}`,
+        `- Efectivo esperado: ${money(expected)}`, `- Efectivo contado: ${money(counted)}`, `- Diferencia: ${money(diff)}`, "",
+        "## Movimientos", "", "| Hora | Tipo | Descripción | Categoría | Medio | Monto |", "|---|---|---|---|---|---:|",
+        ...movements.map(m => `| ${new Date(m.createdAt).toLocaleTimeString("es-PE",{hour:"2-digit",minute:"2-digit"})} | ${m.type} | ${m.description.replaceAll("|","\\|")} | ${m.category} | ${m.method} | ${m.amount.toFixed(2)} |`), "",
+        "> Reporte generado por CajaMaster. Verifica los importes antes de archivarlo.", ""
+      ].join("\n");
+      closed = true; render();
+      $("close-message").textContent = `Caja cerrada. Diferencia: ${money(diff)}. Descarga el reporte en la pestaña Respaldo.`;
+    });
+    $("download-report").addEventListener("click", () => {
+      if (!report) { $("backup-message").textContent = "Primero registra el arqueo y cierra la caja."; return; }
+      const blob = new Blob([report], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url; link.download = `cierre-caja-${new Date().toLocaleDateString("en-CA")}.md`; link.click();
+      URL.revokeObjectURL(url);
+      $("backup-message").textContent = "Reporte descargado. Súbelo a GitHub manualmente; la publicación automática aún no está implementada.";
+    });
+    render();
+  </script>
+</BaseLayout>

@@ -1,0 +1,15 @@
+---
+import "../styles/global.css";
+const { title = "CajaMaster" } = Astro.props;
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0d0f14" />
+    <title>{title}</title>
+    <meta name="description" content="Dashboard de cuadre de caja e ingresos y egresos." />
+  </head>
+  <body><slot /></body>
+</html>
