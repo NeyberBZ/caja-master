@@ -1,39 +1,79 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
-<BaseLayout title="CajaMaster · Cuadre de caja">
 
-  <section id="login-screen" class="mx-auto flex min-h-screen max-w-md items-center px-4 py-10">
+<BaseLayout title="CajaMaster · Cuadre de caja">
+  <section
+    id="login-screen"
+    class="mx-auto flex min-h-screen max-w-md items-center px-4 py-10"
+  >
     <form id="login-form" class="panel w-full space-y-5 p-6">
       <div>
-        <p class="text-xs uppercase tracking-[.22em] text-purple-300">CajaMaster</p>
+        <p class="text-xs uppercase tracking-[.22em] text-purple-300">
+          CajaMaster
+        </p>
         <h1 class="mt-2 text-2xl font-bold">Iniciar sesión</h1>
         <p class="muted mt-2 text-sm">Accede para administrar tu caja.</p>
       </div>
 
       <label class="block text-sm">
         Correo electrónico
-        <input id="login-email" class="field mt-2" type="email" autocomplete="username" required placeholder="tu@correo.com" />
+        <input
+          id="login-email"
+          class="field mt-2"
+          type="email"
+          autocomplete="username"
+          required
+          placeholder="tu@correo.com"
+        />
       </label>
 
       <label class="block text-sm">
         Contraseña
-        <input id="login-password" class="field mt-2" type="password" autocomplete="current-password" required placeholder="Tu contraseña" />
+        <input
+          id="login-password"
+          class="field mt-2"
+          type="password"
+          autocomplete="current-password"
+          required
+          placeholder="Tu contraseña"
+        />
       </label>
 
-      <button id="login-submit" class="btn btn-primary w-full" type="submit">Entrar</button>
-      <p id="login-message" class="muted text-sm" role="status" aria-live="polite"></p>
+      <button id="login-submit" class="btn btn-primary w-full" type="submit"
+        >Entrar</button
+      >
+      <p
+        id="login-message"
+        class="muted text-sm"
+        role="status"
+        aria-live="polite"
+      >
+      </p>
     </form>
   </section>
 
   <main id="app-shell" class="hidden mx-auto max-w-7xl px-4 py-6 md:px-8">
     <header class="mb-8 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3">
-        <div class="grid h-11 w-11 place-items-center rounded-xl bg-purple-500/15 text-xl text-purple-300">◈</div>
-        <div><p class="text-xs uppercase tracking-[.22em] text-purple-300">CajaMaster</p><h1 class="text-2xl font-bold">Cuadre de caja</h1></div>
+        <div
+          class="grid h-11 w-11 place-items-center rounded-xl bg-purple-500/15 text-xl text-purple-300"
+        >
+          ◈
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-[.22em] text-purple-300">
+            CajaMaster
+          </p><h1 class="text-2xl font-bold">Cuadre de caja</h1>
+        </div>
       </div>
-      <div class="flex items-center gap-2 rounded-full border border-slate-700 px-3 py-2 text-sm">
-        <span id="connection-dot" class="h-2 w-2 rounded-full bg-amber-400"></span><span id="connection-status" class="muted">Supabase sin comprobar</span>
+      <div
+        class="flex items-center gap-2 rounded-full border border-slate-700 px-3 py-2 text-sm"
+      >
+        <span id="connection-dot" class="h-2 w-2 rounded-full bg-amber-400"
+        ></span><span id="connection-status" class="muted"
+          >Supabase sin comprobar</span
+        >
         <button id="logout-button" class="btn btn-secondary" type="button">
           Cerrar sesión
         </button>
@@ -42,63 +82,427 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
     <nav class="mb-6 flex flex-wrap gap-2" aria-label="Secciones">
       <button class="btn btn-primary" data-tab="dashboard">Dashboard</button>
-      <button class="btn btn-secondary" data-tab="movimientos">Movimientos</button>
-      <button class="btn btn-secondary" data-tab="arqueo">Arqueo y cierre</button>
-      <button class="btn btn-secondary" data-tab="respaldo">Respaldo Markdown</button>
+      <button class="btn btn-secondary" data-tab="movimientos"
+        >Movimientos</button
+      >
+      <button class="btn btn-secondary" data-tab="arqueo"
+        >Arqueo y cierre</button
+      >
+      <button class="btn btn-secondary" data-tab="respaldo"
+        >Respaldo Markdown</button
+      >
+      <button class="btn btn-secondary" data-tab="historial"
+        >Historial de cajas</button
+      >
     </nav>
 
     <section id="tab-dashboard" class="space-y-6">
       <div class="flex flex-wrap items-end justify-between gap-4">
-        <div><p class="muted text-sm">Resumen de la sesión actual</p><h2 class="text-xl font-semibold">Control diario</h2></div>
-        <div class="flex gap-2"><button id="check-supabase" class="btn btn-secondary">Probar Supabase</button><button id="open-cash" class="btn btn-primary">Abrir caja</button></div>
+        <div>
+          <p class="muted text-sm">Resumen de la sesión actual</p><h2
+            class="text-xl font-semibold"
+          >
+            Control diario
+          </h2>
+        </div>
+        <div class="flex gap-2">
+          <button id="check-supabase" class="btn btn-secondary"
+            >Probar Supabase</button
+          ><button id="open-cash" class="btn btn-primary">Abrir caja</button>
+        </div>
       </div>
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article class="panel p-5"><p class="muted text-sm">Fondo inicial</p><p id="stat-fondo" class="mt-3 text-2xl font-bold">S/ 0.00</p></article>
-        <article class="panel p-5"><p class="muted text-sm">Ventas del día</p><p id="stat-ventas" class="mt-3 text-2xl font-bold">S/ 0.00</p></article>
-        <article class="panel p-5"><p class="muted text-sm">Egresos</p><p id="stat-egresos" class="mt-3 text-2xl font-bold">S/ 0.00</p></article>
-        <article class="panel p-5"><p class="muted text-sm">Efectivo esperado</p><p id="stat-efectivo" class="mt-3 text-2xl font-bold text-purple-300">S/ 0.00</p></article>
-      </div>
-      <div class="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <article class="panel p-5">
-          <div class="mb-4 flex items-center justify-between"><h3 class="font-semibold">Movimientos recientes</h3><span id="movement-count" class="muted text-sm">0 registros</span></div>
-          <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead class="muted border-b border-slate-700"><tr><th class="py-3 pr-3">Tipo</th><th class="py-3 pr-3">Detalle</th><th class="py-3 pr-3">Medio</th><th class="py-3 text-right">Monto</th></tr></thead><tbody id="recent-rows"><tr><td colspan="4" class="py-8 text-center muted">Abre la caja y registra el primer movimiento.</td></tr></tbody></table></div>
+          <p class="muted text-sm">Fondo inicial</p><p
+            id="stat-fondo"
+            class="mt-3 text-2xl font-bold"
+          >
+            S/ 0.00
+          </p>
         </article>
-        <article class="panel p-5"><h3 class="mb-4 font-semibold">Distribución de ventas</h3><div id="payment-summary" class="space-y-4"><p class="muted text-sm">Los importes por medio de pago aparecerán aquí.</p></div><p class="mt-5 text-xs muted">Los pagos digitales no se suman al efectivo físico esperado.</p></article>
+        <article class="panel p-5">
+          <p class="muted text-sm">Ventas del día</p><p
+            id="stat-ventas"
+            class="mt-3 text-2xl font-bold"
+          >
+            S/ 0.00
+          </p>
+        </article>
+        <article class="panel p-5">
+          <p class="muted text-sm">Egresos</p><p
+            id="stat-egresos"
+            class="mt-3 text-2xl font-bold"
+          >
+            S/ 0.00
+          </p>
+        </article>
+        <article class="panel p-5">
+          <p class="muted text-sm">Efectivo esperado</p><p
+            id="stat-efectivo"
+            class="mt-3 text-2xl font-bold text-purple-300"
+          >
+            S/ 0.00
+          </p>
+        </article>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
+        <article class="panel p-5">
+          <div class="mb-4 flex items-center justify-between">
+            <h3 class="font-semibold">Movimientos recientes</h3><span
+              id="movement-count"
+              class="muted text-sm">0 registros</span
+            >
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="muted border-b border-slate-700"
+                ><tr
+                  ><th class="py-3 pr-3">Tipo</th><th class="py-3 pr-3"
+                    >Detalle</th
+                  ><th class="py-3 pr-3">Medio</th><th class="py-3 text-right"
+                    >Monto</th
+                  ></tr
+                ></thead
+              ><tbody id="recent-rows"
+                ><tr
+                  ><td colspan="4" class="py-8 text-center muted"
+                    >Abre la caja y registra el primer movimiento.</td
+                  ></tr
+                ></tbody
+              >
+            </table>
+          </div>
+        </article>
+        <article class="panel overflow-hidden p-5 lg:col-span-2">
+          <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 class="font-semibold">Cuadro de pagos por medio</h3><p
+                class="muted mt-1 text-sm"
+              >
+                Detalle de las ventas registradas en la sesión actual.
+              </p>
+            </div><div class="rounded-xl border border-slate-700 px-4 py-3">
+              <p class="muted text-xs">Total pagos no efectivo</p><p
+                id="digital-payments-total"
+                class="mt-1 text-xl font-bold text-cyan-300"
+              >
+                S/ 0.00
+              </p>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[540px] text-left text-sm">
+              <thead class="muted border-b border-slate-700"
+                ><tr
+                  ><th class="py-3 pr-4">Medio de pago</th><th
+                    class="py-3 pr-4 text-right">Operaciones</th
+                  ><th class="py-3 pr-4 text-right">Total vendido</th><th
+                    class="py-3 text-right">Participación</th
+                  ></tr
+                ></thead
+              ><tbody id="payment-table-rows"
+                ><tr
+                  ><td colspan="4" class="py-7 text-center muted"
+                    >Los pagos aparecerán aquí al registrar ventas.</td
+                  ></tr
+                ></tbody
+              ><tfoot class="border-t border-slate-700 font-semibold"
+                ><tr
+                  ><td class="py-3 pr-4">Total de ventas</td><td
+                    id="payment-table-count"
+                    class="py-3 pr-4 text-right">0</td
+                  ><td id="payment-table-total" class="py-3 pr-4 text-right"
+                    >S/ 0.00</td
+                  ><td id="payment-table-percent" class="py-3 text-right"
+                    >100%</td
+                  ></tr
+                ></tfoot
+              >
+            </table>
+          </div>
+          <p class="mt-4 text-xs muted">
+            El efectivo esperado solo considera movimientos en efectivo. Yape,
+            Plin, SIP, Dale, transferencias, tarjetas y otros pagos no se suman
+            al efectivo físico.
+          </p>
+        </article>
       </div>
     </section>
 
     <section id="tab-movimientos" class="hidden space-y-5">
-      <div><p class="muted text-sm">Ventas y salidas de dinero</p><h2 class="text-xl font-semibold">Registrar movimiento</h2></div>
+      <div>
+        <p class="muted text-sm">Ventas y salidas de dinero</p><h2
+          class="text-xl font-semibold"
+        >
+          Registrar movimiento
+        </h2>
+      </div>
       <form id="movement-form" class="panel grid gap-4 p-5 md:grid-cols-2">
-        <label class="text-sm">Tipo<select id="movement-type" class="field mt-2"><option value="venta">Venta</option><option value="egreso">Egreso</option></select></label>
-        <label class="text-sm">Monto (S/)<input id="movement-amount" class="field mt-2" type="number" min="0.01" step="0.01" required placeholder="0.00" /></label>
-        <label class="text-sm">Descripción<input id="movement-description" class="field mt-2" maxlength="160" required placeholder="Ej. Venta mostrador / compra de bolsas" /></label>
-        <label class="text-sm">Medio de pago / salida<select id="movement-method" class="field mt-2"><option value="efectivo">Efectivo</option><option value="yape">Yape</option><option value="plin">Plin</option><option value="tarjeta">Tarjeta</option><option value="transferencia">Transferencia</option></select></label>
-        <label id="category-wrap" class="hidden text-sm md:col-span-2">Categoría<select id="movement-category" class="field mt-2"><option value="mercaderia">Mercadería</option><option value="transporte">Transporte</option><option value="servicios">Servicios</option><option value="alimentacion">Alimentación</option><option value="otros">Otros</option></select></label>
-        <div class="md:col-span-2"><button class="btn btn-primary" type="submit">Guardar movimiento</button><p id="movement-message" class="mt-3 text-sm muted" role="status"></p></div>
+        <label class="text-sm"
+          >Tipo<select id="movement-type" class="field mt-2"
+            ><option value="venta">Venta</option><option value="egreso"
+              >Egreso</option
+            ></select
+          ></label
+        >
+        <label class="text-sm"
+          >Monto (S/)<input
+            id="movement-amount"
+            class="field mt-2"
+            type="number"
+            min="0.01"
+            step="0.01"
+            required
+            placeholder="0.00"
+          /></label
+        >
+        <label class="text-sm"
+          >Descripción<input
+            id="movement-description"
+            class="field mt-2"
+            maxlength="160"
+            required
+            placeholder="Ej. Venta mostrador / compra de bolsas"
+          /></label
+        >
+        <label class="text-sm"
+          >Medio de pago / salida<select id="movement-method" class="field mt-2"
+            ><option value="efectivo">Efectivo</option><option value="yape"
+              >Yape</option
+            ><option value="plin">Plin</option><option value="sip"
+              >SIP / pago interoperable</option
+            ><option value="dale">Dale</option><option value="transferencia"
+              >Transferencia bancaria</option
+            ><option value="tarjeta">Tarjeta</option><option
+              value="digital_otro">Otro pago digital</option
+            ></select
+          ></label
+        >
+        <label id="category-wrap" class="hidden text-sm md:col-span-2"
+          >Categoría<select id="movement-category" class="field mt-2"
+            ><option value="mercaderia">Mercadería</option><option
+              value="transporte">Transporte</option
+            ><option value="servicios">Servicios</option><option
+              value="alimentacion">Alimentación</option
+            ><option value="otros">Otros</option></select
+          ></label
+        >
+        <div class="md:col-span-2">
+          <button class="btn btn-primary" type="submit"
+            >Guardar movimiento</button
+          ><p id="movement-message" class="mt-3 text-sm muted" role="status">
+          </p>
+        </div>
       </form>
-      <div class="panel overflow-x-auto p-5"><table class="w-full min-w-[600px] text-left text-sm"><thead class="muted border-b border-slate-700"><tr><th class="py-3">Hora</th><th>Tipo</th><th>Descripción</th><th>Medio</th><th class="text-right">Monto</th></tr></thead><tbody id="all-rows"></tbody></table></div>
+      <div class="panel overflow-x-auto p-5">
+        <table class="w-full min-w-[600px] text-left text-sm">
+          <thead class="muted border-b border-slate-700"
+            ><tr
+              ><th class="py-3">Hora</th><th>Tipo</th><th>Descripción</th><th
+                >Medio</th
+              ><th class="text-right">Monto</th></tr
+            ></thead
+          ><tbody id="all-rows"></tbody>
+        </table>
+      </div>
     </section>
 
     <section id="tab-arqueo" class="hidden space-y-5">
-      <div><p class="muted text-sm">Compara el sistema con el efectivo contado</p><h2 class="text-xl font-semibold">Arqueo y cierre</h2></div>
+      <div>
+        <p class="muted text-sm">
+          Compara el sistema con el efectivo contado
+        </p><h2 class="text-xl font-semibold">Arqueo y cierre</h2>
+      </div>
       <div class="panel grid gap-5 p-5 md:grid-cols-2">
-        <label class="text-sm">Efectivo contado físicamente (S/)<input id="cash-count" class="field mt-2" type="number" min="0" step="0.01" placeholder="0.00" /></label>
-        <div><p class="muted text-sm">Efectivo esperado</p><p id="expected-cash" class="mt-2 text-2xl font-bold">S/ 0.00</p></div>
-        <div class="rounded-xl bg-slate-900 p-4"><p class="muted text-sm">Diferencia (contado − esperado)</p><p id="cash-difference" class="mt-2 text-2xl font-bold">S/ 0.00</p><p id="difference-label" class="mt-1 text-sm muted">Ingresa el conteo físico.</p></div>
-        <div class="flex flex-col justify-center gap-2"><button id="close-cash" class="btn btn-primary">Cerrar y generar reporte</button><p id="close-message" class="text-sm muted" role="status"></p></div>
+        <label class="text-sm"
+          >Efectivo contado físicamente (S/)<input
+            id="cash-count"
+            class="field mt-2"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="0.00"
+          /></label
+        >
+        <div>
+          <p class="muted text-sm">Efectivo esperado</p><p
+            id="expected-cash"
+            class="mt-2 text-2xl font-bold"
+          >
+            S/ 0.00
+          </p>
+        </div>
+        <div class="rounded-xl bg-slate-900 p-4">
+          <p class="muted text-sm">Diferencia (contado − esperado)</p><p
+            id="cash-difference"
+            class="mt-2 text-2xl font-bold"
+          >
+            S/ 0.00
+          </p><p id="difference-label" class="mt-1 text-sm muted">
+            Ingresa el conteo físico.
+          </p>
+        </div>
+        <div class="flex flex-col justify-center gap-2">
+          <button id="close-cash" class="btn btn-primary"
+            >Cerrar y generar reporte</button
+          ><p id="close-message" class="text-sm muted" role="status"></p>
+        </div>
       </div>
     </section>
 
     <section id="tab-respaldo" class="hidden space-y-5">
-      <div><p class="muted text-sm">Exportación para guardar en tu repositorio</p><h2 class="text-xl font-semibold">Respaldo Markdown</h2></div>
-      <article class="panel p-5"><p class="mb-4 text-sm muted">Se descarga un archivo Markdown con apertura, movimientos, resumen de medios de pago y arqueo. Esta acción descarga el archivo en tu navegador; todavía no crea un commit automático en GitHub.</p><button id="download-report" class="btn btn-primary">Descargar reporte .md</button><p id="backup-message" class="mt-3 text-sm muted" role="status"></p></article>
+      <div>
+        <p class="muted text-sm">
+          Exportación para guardar en tu repositorio
+        </p><h2 class="text-xl font-semibold">Respaldo Markdown</h2>
+      </div>
+      <article class="panel p-5">
+        <p class="mb-4 text-sm muted">
+          Se descarga un archivo Markdown con apertura, movimientos, resumen de
+          medios de pago y arqueo. Esta acción descarga el archivo en tu
+          navegador; todavía no crea un commit automático en GitHub.
+        </p><button id="download-report" class="btn btn-primary"
+          >Descargar reporte .md</button
+        ><p id="backup-message" class="mt-3 text-sm muted" role="status"></p>
+      </article>
     </section>
-    <footer class="mt-10 border-t border-slate-800 pt-5 text-xs muted">CajaMaster · Montos en soles peruanos (PEN) · Aperturas y movimientos se guardan en Supabase.</footer>
+
+    <section id="tab-historial" class="hidden space-y-5">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p class="muted text-sm">Consulta cierres guardados en Supabase</p><h2
+            class="text-xl font-semibold"
+          >
+            Historial de cajas
+          </h2>
+        </div>
+        <button id="history-refresh" class="btn btn-secondary" type="button"
+          >Actualizar historial</button
+        >
+      </div>
+      <form
+        id="history-filter"
+        class="panel grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto_auto] lg:items-end"
+      >
+        <label class="text-sm"
+          >Desde<input
+            id="history-from"
+            class="field mt-2"
+            type="date"
+          /></label
+        >
+        <label class="text-sm"
+          >Hasta<input id="history-to" class="field mt-2" type="date" /></label
+        >
+        <button class="btn btn-primary" type="submit">Filtrar</button>
+        <button id="history-clear" class="btn btn-secondary" type="button"
+          >Limpiar</button
+        >
+        <p
+          id="history-message"
+          class="muted text-sm sm:col-span-2 lg:col-span-4"
+          role="status"
+          aria-live="polite"
+        >
+          Cargando cierres…
+        </p>
+      </form>
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <article class="panel p-5">
+          <p class="muted text-sm">Cierres encontrados</p><p
+            id="history-count"
+            class="mt-3 text-2xl font-bold"
+          >
+            0
+          </p>
+        </article>
+        <article class="panel p-5">
+          <p class="muted text-sm">Ventas acumuladas</p><p
+            id="history-sales"
+            class="mt-3 text-2xl font-bold text-emerald-300"
+          >
+            S/ 0.00
+          </p>
+        </article>
+        <article class="panel p-5">
+          <p class="muted text-sm">Egresos acumulados</p><p
+            id="history-expenses"
+            class="mt-3 text-2xl font-bold text-orange-300"
+          >
+            S/ 0.00
+          </p>
+        </article>
+        <article class="panel p-5">
+          <p class="muted text-sm">Diferencia neta</p><p
+            id="history-difference"
+            class="mt-3 text-2xl font-bold"
+          >
+            S/ 0.00
+          </p>
+        </article>
+      </div>
+      <article class="panel overflow-x-auto p-5">
+        <table class="w-full min-w-[1000px] text-left text-sm">
+          <thead class="muted border-b border-slate-700"
+            ><tr
+              ><th class="py-3 pr-3">Fecha de cierre</th><th class="py-3 pr-3"
+                >Fondo inicial</th
+              ><th class="py-3 pr-3">Ventas</th><th class="py-3 pr-3"
+                >Egresos</th
+              ><th class="py-3 pr-3">Efectivo esperado</th><th class="py-3 pr-3"
+                >Contado</th
+              ><th class="py-3 pr-3">Diferencia</th><th class="py-3">Reporte</th
+              ></tr
+            ></thead
+          >
+          <tbody id="history-rows"
+            ><tr
+              ><td colspan="8" class="py-8 text-center muted"
+                >Cargando historial…</td
+              ></tr
+            ></tbody
+          >
+        </table>
+        <p class="mt-4 text-xs muted">
+          Se muestran hasta 250 cierres por consulta. Usa los filtros de fecha
+          para acotar periodos.
+        </p>
+      </article>
+    </section>
+
+    <footer class="mt-10 border-t border-slate-800 pt-5 text-xs muted">
+      CajaMaster · Montos en soles peruanos (PEN) · Aperturas y movimientos se
+      guardan en Supabase.
+    </footer>
   </main>
 
-  <dialog id="open-dialog" class="w-[min(92vw,440px)] rounded-2xl border border-slate-700 bg-[#161922] p-0 text-white backdrop:bg-black/70">
-    <form id="open-form" class="space-y-4 p-6"><h2 class="text-xl font-bold">Apertura de caja</h2><p class="text-sm muted">Registra el efectivo inicial disponible en el cajón.</p><label class="block text-sm">Fondo inicial (S/)<input id="opening-fund" class="field mt-2" type="number" min="0" step="0.01" value="0" required /></label><div class="flex justify-end gap-2"><button type="button" id="cancel-open" class="btn btn-secondary">Cancelar</button><button class="btn btn-primary" type="submit">Confirmar apertura</button></div></form>
+  <dialog
+    id="open-dialog"
+    class="w-[min(92vw,440px)] rounded-2xl border border-slate-700 bg-[#161922] p-0 text-white backdrop:bg-black/70"
+  >
+    <form id="open-form" class="space-y-4 p-6">
+      <h2 class="text-xl font-bold">Apertura de caja</h2><p
+        class="text-sm muted"
+      >
+        Registra el efectivo inicial disponible en el cajón.
+      </p><label class="block text-sm"
+        >Fondo inicial (S/)<input
+          id="opening-fund"
+          class="field mt-2"
+          type="number"
+          min="0"
+          step="0.01"
+          value="0"
+          required
+        /></label
+      ><div class="flex justify-end gap-2">
+        <button type="button" id="cancel-open" class="btn btn-secondary"
+          >Cancelar</button
+        ><button class="btn btn-primary" type="submit"
+          >Confirmar apertura</button
+        >
+      </div>
+    </form>
   </dialog>
 
   <script>
@@ -118,7 +522,15 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       movement_type: "sale" | "expense";
       amount: number | string;
       description: string;
-      payment_method: "cash" | "yape" | "plin" | "card" | "transfer";
+      payment_method:
+        | "cash"
+        | "yape"
+        | "plin"
+        | "card"
+        | "transfer"
+        | "sip"
+        | "dale"
+        | "digital_other";
       category: string | null;
       created_at: string;
     };
@@ -126,6 +538,21 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       expected_cash?: number | string;
       counted_cash?: number | string;
       difference?: number | string;
+    };
+    type HistorySession = {
+      id: string;
+      opened_at: string;
+      closed_at: string | null;
+      opening_fund: number | string;
+      expected_cash: number | string | null;
+      counted_cash: number | string | null;
+      difference: number | string | null;
+    };
+    type HistoryMovement = DbMovement & { session_id: string };
+    type HistoryEntry = HistorySession & {
+      salesTotal: number;
+      expensesTotal: number;
+      movements: Movement[];
     };
 
     const $ = (id: string) => document.getElementById(id)!;
@@ -144,20 +571,62 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     let closed = false;
     let movements: Movement[] = [];
     let report: string | null = null;
+    let historyEntries: HistoryEntry[] = [];
 
-    const money = (n: number) => new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(n);
-    const sum = (items: Movement[]) => items.reduce((total, item) => total + item.amount, 0);
-    const sales = () => movements.filter(m => m.type === "venta");
-    const expenses = () => movements.filter(m => m.type === "egreso");
-    const expectedCash = () => openingFund
-      + sum(sales().filter(m => m.method === "efectivo"))
-      - sum(expenses().filter(m => m.method === "efectivo"));
-    const safe = (value: string) => value.replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[char]!));
+    const money = (n: number) =>
+      new Intl.NumberFormat("es-PE", {
+        style: "currency",
+        currency: "PEN",
+      }).format(n);
+    const sum = (items: Movement[]) =>
+      items.reduce((total, item) => total + item.amount, 0);
+    const sales = () => movements.filter((m) => m.type === "venta");
+    const expenses = () => movements.filter((m) => m.type === "egreso");
+    const expectedCash = () =>
+      openingFund +
+      sum(sales().filter((m) => m.method === "efectivo")) -
+      sum(expenses().filter((m) => m.method === "efectivo"));
+    const safe = (value: string) =>
+      value.replace(
+        /[&<>"']/g,
+        (char) =>
+          ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          })[char]!,
+      );
 
-    const toDbType = (type: Movement["type"]): "sale" | "expense" => type === "venta" ? "sale" : "expense";
-    const fromDbType = (type: DbMovement["movement_type"]): Movement["type"] => type === "sale" ? "venta" : "egreso";
-    const toDbMethod = (method: string): string => ({ efectivo: "cash", yape: "yape", plin: "plin", tarjeta: "card", transferencia: "transfer" }[method] ?? "cash");
-    const fromDbMethod = (method: DbMovement["payment_method"]): string => ({ cash: "efectivo", yape: "yape", plin: "plin", card: "tarjeta", transfer: "transferencia" }[method] ?? method);
+    const toDbType = (type: Movement["type"]): "sale" | "expense" =>
+      type === "venta" ? "sale" : "expense";
+    const fromDbType = (type: DbMovement["movement_type"]): Movement["type"] =>
+      type === "sale" ? "venta" : "egreso";
+    const toDbMethod = (method: string): DbMovement["payment_method"] => {
+      const methods: Record<string, DbMovement["payment_method"]> = {
+        efectivo: "cash",
+        yape: "yape",
+        plin: "plin",
+        sip: "sip",
+        dale: "dale",
+        tarjeta: "card",
+        transferencia: "transfer",
+        digital_otro: "digital_other",
+      };
+      return methods[method] ?? "cash";
+    };
+    const fromDbMethod = (method: DbMovement["payment_method"]): string =>
+      ({
+        cash: "efectivo",
+        yape: "yape",
+        plin: "plin",
+        sip: "SIP / pago interoperable",
+        dale: "Dale",
+        card: "tarjeta",
+        transfer: "transferencia bancaria",
+        digital_other: "otro pago digital",
+      })[method] ?? method;
     const fromDbMovement = (row: DbMovement): Movement => ({
       id: row.id,
       type: fromDbType(row.movement_type),
@@ -168,7 +637,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       createdAt: row.created_at,
     });
 
-    function setConnection(message: string, tone: "green" | "amber" | "red" = "amber") {
+    function setConnection(
+      message: string,
+      tone: "green" | "amber" | "red" = "amber",
+    ) {
       $("connection-status").textContent = message;
       const dot = $("connection-dot");
       dot.className = `h-2 w-2 rounded-full ${tone === "green" ? "bg-emerald-400" : tone === "red" ? "bg-red-400" : "bg-amber-400"}`;
@@ -193,6 +665,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       closed = false;
       movements = [];
       report = null;
+      historyEntries = [];
+      renderHistory();
+      $("history-message").textContent =
+        "Inicia sesión para consultar el historial.";
       const count = $("cash-count") as HTMLInputElement;
       count.value = "";
       $("movement-message").textContent = "";
@@ -202,10 +678,13 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     }
 
     async function loadCurrentSession() {
-      if (!authClient) throw new Error("No está configurado el cliente de Supabase.");
-      const { data: userData, error: userError } = await authClient.auth.getUser();
+      if (!authClient)
+        throw new Error("No está configurado el cliente de Supabase.");
+      const { data: userData, error: userError } =
+        await authClient.auth.getUser();
       if (userError) throw userError;
-      if (!userData.user) throw new Error("La sesión de usuario ya no está activa.");
+      if (!userData.user)
+        throw new Error("La sesión de usuario ya no está activa.");
       userId = userData.user.id;
 
       const { data: session, error: sessionError } = await authClient
@@ -235,7 +714,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       opened = true;
       const { data: rows, error: movementError } = await authClient
         .from("caja_movements")
-        .select("id, movement_type, amount, description, payment_method, category, created_at")
+        .select(
+          "id, movement_type, amount, description, payment_method, category, created_at",
+        )
         .eq("session_id", sessionId)
         .order("created_at", { ascending: true });
       if (movementError) throw movementError;
@@ -244,13 +725,226 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       setConnection("Supabase conectado · caja recuperada", "green");
     }
 
+    const formatDateTime = (value: string | null) =>
+      value
+        ? new Date(value).toLocaleString("es-PE", {
+            dateStyle: "short",
+            timeStyle: "short",
+          })
+        : "—";
+    const dateKey = (value: string) => {
+      const date = new Date(value);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    };
+    const markdownText = (value: string) =>
+      value.replace(/[|\r\n]/g, (char) => (char === "|" ? "\\|" : " "));
+
+    function renderHistory() {
+      const totalSales = historyEntries.reduce(
+        (total, entry) => total + entry.salesTotal,
+        0,
+      );
+      const totalExpenses = historyEntries.reduce(
+        (total, entry) => total + entry.expensesTotal,
+        0,
+      );
+      const netDifference = historyEntries.reduce(
+        (total, entry) => total + Number(entry.difference ?? 0),
+        0,
+      );
+      $("history-count").textContent = String(historyEntries.length);
+      $("history-sales").textContent = money(totalSales);
+      $("history-expenses").textContent = money(totalExpenses);
+      $("history-difference").textContent = money(netDifference);
+      $("history-difference").className =
+        `mt-3 text-2xl font-bold ${Math.abs(netDifference) < 0.005 ? "text-emerald-300" : netDifference < 0 ? "text-red-300" : "text-amber-300"}`;
+
+      const tbody = $("history-rows");
+      if (!historyEntries.length) {
+        tbody.innerHTML =
+          '<tr><td colspan="8" class="py-8 text-center muted">No se encontraron cierres para este periodo.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = historyEntries
+        .map((entry) => {
+          const difference = Number(entry.difference ?? 0);
+          const differenceClass =
+            Math.abs(difference) < 0.005
+              ? "text-emerald-300"
+              : difference < 0
+                ? "text-red-300"
+                : "text-amber-300";
+          return `<tr class="border-b border-slate-800 align-middle">
+          <td class="py-3 pr-3 whitespace-nowrap">${formatDateTime(entry.closed_at)}</td>
+          <td class="py-3 pr-3 whitespace-nowrap">${money(Number(entry.opening_fund))}</td>
+          <td class="py-3 pr-3 whitespace-nowrap text-emerald-300">${money(entry.salesTotal)}</td>
+          <td class="py-3 pr-3 whitespace-nowrap text-orange-300">${money(entry.expensesTotal)}</td>
+          <td class="py-3 pr-3 whitespace-nowrap">${money(Number(entry.expected_cash ?? 0))}</td>
+          <td class="py-3 pr-3 whitespace-nowrap">${money(Number(entry.counted_cash ?? 0))}</td>
+          <td class="py-3 pr-3 whitespace-nowrap ${differenceClass}">${money(difference)}</td>
+          <td class="py-3"><button class="btn btn-secondary whitespace-nowrap" type="button" data-history-download="${entry.id}">Descargar .md</button></td>
+        </tr>`;
+        })
+        .join("");
+    }
+
+    async function loadHistory() {
+      const message = $("history-message");
+      if (!authClient || !userId) {
+        historyEntries = [];
+        renderHistory();
+        message.textContent = "Inicia sesión para consultar el historial.";
+        return;
+      }
+      const from = ($("history-from") as HTMLInputElement).value;
+      const to = ($("history-to") as HTMLInputElement).value;
+      if (from && to && from > to) {
+        message.textContent =
+          "La fecha inicial no puede ser posterior a la fecha final.";
+        return;
+      }
+
+      message.textContent = "Consultando cierres en Supabase…";
+      const toIso = (value: string) =>
+        new Date(`${value}T00:00:00`).toISOString();
+      let query = authClient
+        .from("caja_sessions")
+        .select(
+          "id, opened_at, closed_at, opening_fund, expected_cash, counted_cash, difference",
+        )
+        .eq("opened_by", userId)
+        .eq("status", "closed")
+        .order("closed_at", { ascending: false })
+        .limit(250);
+      if (from) query = query.gte("closed_at", toIso(from));
+      if (to) {
+        const endExclusive = new Date(`${to}T00:00:00`);
+        endExclusive.setDate(endExclusive.getDate() + 1);
+        query = query.lt("closed_at", endExclusive.toISOString());
+      }
+
+      try {
+        const { data: sessionRows, error: sessionError } = await query;
+        if (sessionError) throw sessionError;
+        const sessions = (sessionRows ?? []) as HistorySession[];
+        const ids = sessions.map((session) => session.id);
+        let movementRows: HistoryMovement[] = [];
+        if (ids.length) {
+          const { data: rows, error: movementError } = await authClient
+            .from("caja_movements")
+            .select(
+              "id, session_id, movement_type, amount, description, payment_method, category, created_at",
+            )
+            .in("session_id", ids)
+            .order("created_at", { ascending: true });
+          if (movementError) throw movementError;
+          movementRows = (rows ?? []) as HistoryMovement[];
+        }
+
+        const bySession = new Map<string, Movement[]>();
+        for (const row of movementRows) {
+          const list = bySession.get(row.session_id) ?? [];
+          list.push(fromDbMovement(row));
+          bySession.set(row.session_id, list);
+        }
+        historyEntries = sessions.map((session) => {
+          const sessionMovements = bySession.get(session.id) ?? [];
+          return {
+            ...session,
+            salesTotal: sum(
+              sessionMovements.filter((movement) => movement.type === "venta"),
+            ),
+            expensesTotal: sum(
+              sessionMovements.filter((movement) => movement.type === "egreso"),
+            ),
+            movements: sessionMovements,
+          };
+        });
+        renderHistory();
+        message.textContent = `Se encontraron ${historyEntries.length} cierres. Los importes corresponden al periodo filtrado.`;
+      } catch (error) {
+        historyEntries = [];
+        renderHistory();
+        message.textContent =
+          error instanceof Error
+            ? `No se pudo cargar el historial: ${error.message}`
+            : "No se pudo cargar el historial.";
+      }
+    }
+
+    function downloadHistoryReport(entry: HistoryEntry) {
+      const closedAt = entry.closed_at ?? entry.opened_at;
+      const closedDate = dateKey(closedAt);
+      const expected = Number(entry.expected_cash ?? 0);
+      const counted = Number(entry.counted_cash ?? 0);
+      const difference = Number(entry.difference ?? counted - expected);
+      const lines = [
+        "---",
+        `date: "${closedDate}"`,
+        'title: "Cierre de caja"',
+        'currency: "PEN"',
+        `session_id: "${entry.id}"`,
+        `opened_at: "${entry.opened_at}"`,
+        `closed_at: "${closedAt}"`,
+        `opening_fund: ${Number(entry.opening_fund).toFixed(2)}`,
+        `sales_total: ${entry.salesTotal.toFixed(2)}`,
+        `expenses_total: ${entry.expensesTotal.toFixed(2)}`,
+        `expected_cash: ${expected.toFixed(2)}`,
+        `counted_cash: ${counted.toFixed(2)}`,
+        `difference: ${difference.toFixed(2)}`,
+        "---",
+        "",
+        `# Cierre de caja — ${closedDate}`,
+        "",
+        "## Resumen",
+        "",
+        `- Apertura: ${formatDateTime(entry.opened_at)}`,
+        `- Cierre: ${formatDateTime(closedAt)}`,
+        `- Fondo inicial: ${money(Number(entry.opening_fund))}`,
+        `- Ventas totales: ${money(entry.salesTotal)}`,
+        `- Egresos totales: ${money(entry.expensesTotal)}`,
+        `- Efectivo esperado: ${money(expected)}`,
+        `- Efectivo contado: ${money(counted)}`,
+        `- Diferencia: ${money(difference)}`,
+        "",
+        "## Movimientos",
+        "",
+        "| Hora | Tipo | Descripción | Categoría | Medio | Monto |",
+        "|---|---|---|---|---|---:|",
+        ...entry.movements.map(
+          (movement) =>
+            `| ${new Date(movement.createdAt).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" })} | ${movement.type} | ${markdownText(movement.description)} | ${markdownText(movement.category)} | ${markdownText(movement.method)} | ${movement.amount.toFixed(2)} |`,
+        ),
+        "",
+        "> Reporte histórico descargado desde CajaMaster.",
+        "",
+      ];
+      const blob = new Blob([lines.join("\n")], {
+        type: "text/markdown;charset=utf-8",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `cierre-caja-${closedDate}-${entry.id.slice(0, 8)}.md`;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
     function renderRows(target: string, items: Movement[]) {
       const tbody = $(target);
       if (!items.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="py-7 text-center muted">No hay movimientos registrados.</td></tr>';
+        tbody.innerHTML =
+          '<tr><td colspan="5" class="py-7 text-center muted">No hay movimientos registrados.</td></tr>';
         return;
       }
-      tbody.innerHTML = items.slice().reverse().map(m => `<tr class="border-b border-slate-800"><td class="py-3 pr-3 muted">${new Date(m.createdAt).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" })}</td><td class="py-3 pr-3">${m.type === "venta" ? "Venta" : "Egreso"}</td><td class="py-3 pr-3">${safe(m.description)}${m.category ? `<span class="block text-xs muted">${safe(m.category)}</span>` : ""}</td><td class="py-3 pr-3">${safe(m.method)}</td><td class="py-3 text-right ${m.type === "venta" ? "text-emerald-300" : "text-orange-300"}">${m.type === "venta" ? "+" : "−"}${money(m.amount)}</td></tr>`).join("");
+      tbody.innerHTML = items
+        .slice()
+        .reverse()
+        .map(
+          (m) =>
+            `<tr class="border-b border-slate-800"><td class="py-3 pr-3 muted">${new Date(m.createdAt).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" })}</td><td class="py-3 pr-3">${m.type === "venta" ? "Venta" : "Egreso"}</td><td class="py-3 pr-3">${safe(m.description)}${m.category ? `<span class="block text-xs muted">${safe(m.category)}</span>` : ""}</td><td class="py-3 pr-3">${safe(m.method)}</td><td class="py-3 text-right ${m.type === "venta" ? "text-emerald-300" : "text-orange-300"}">${m.type === "venta" ? "+" : "−"}${money(m.amount)}</td></tr>`,
+        )
+        .join("");
     }
 
     function render() {
@@ -262,33 +956,80 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       $("movement-count").textContent = `${movements.length} registros`;
       const recent = movements.slice(-5).reverse();
       $("recent-rows").innerHTML = recent.length
-        ? recent.map(m => `<tr class="border-b border-slate-800"><td class="py-3 pr-3">${m.type === "venta" ? "Venta" : "Egreso"}</td><td class="py-3 pr-3">${safe(m.description)}</td><td class="py-3 pr-3">${safe(m.method)}</td><td class="py-3 text-right">${money(m.amount)}</td></tr>`).join("")
+        ? recent
+            .map(
+              (m) =>
+                `<tr class="border-b border-slate-800"><td class="py-3 pr-3">${m.type === "venta" ? "Venta" : "Egreso"}</td><td class="py-3 pr-3">${safe(m.description)}</td><td class="py-3 pr-3">${safe(m.method)}</td><td class="py-3 text-right">${money(m.amount)}</td></tr>`,
+            )
+            .join("")
         : '<tr><td colspan="4" class="py-8 text-center muted">Abre la caja y registra el primer movimiento.</td></tr>';
       renderRows("all-rows", movements);
-      const methods = ["efectivo", "yape", "plin", "tarjeta", "transferencia"];
-      const totalSales = sum(sales());
-      $("payment-summary").innerHTML = methods.map(method => {
-        const amount = sum(sales().filter(m => m.method === method));
-        const pct = totalSales ? amount / totalSales * 100 : 0;
-        return `<div><div class="mb-2 flex justify-between text-sm"><span>${method[0].toUpperCase() + method.slice(1)}</span><span>${money(amount)}</span></div><div class="h-2 overflow-hidden rounded-full bg-slate-800"><div class="h-full rounded-full bg-purple-400" style="width:${pct}%"></div></div></div>`;
-      }).join("");
+      const methods = [
+        { key: "efectivo", label: "Efectivo", digital: false },
+        { key: "yape", label: "Yape", digital: true },
+        { key: "plin", label: "Plin", digital: true },
+        {
+          key: "SIP / pago interoperable",
+          label: "SIP / pago interoperable",
+          digital: true,
+        },
+        { key: "Dale", label: "Dale", digital: true },
+        {
+          key: "transferencia bancaria",
+          label: "Transferencia bancaria",
+          digital: true,
+        },
+        { key: "tarjeta", label: "Tarjeta", digital: true },
+        { key: "otro pago digital", label: "Otro pago digital", digital: true },
+      ];
+      const saleMovements = sales();
+      const totalSales = sum(saleMovements);
+      const digitalTotal = sum(
+        saleMovements.filter((m) => m.method !== "efectivo"),
+      );
+      $("digital-payments-total").textContent = money(digitalTotal);
+      $("payment-table-rows").innerHTML = methods
+        .map((method) => {
+          const rows = saleMovements.filter((m) => m.method === method.key);
+          const amount = sum(rows);
+          const pct = totalSales ? (amount / totalSales) * 100 : 0;
+          return `<tr class="border-b border-slate-800"><td class="py-3 pr-4">${method.label}${method.digital ? '<span class="ml-2 rounded-full bg-cyan-950 px-2 py-0.5 text-xs text-cyan-300">Digital</span>' : ""}</td><td class="py-3 pr-4 text-right tabular-nums">${rows.length}</td><td class="py-3 pr-4 text-right tabular-nums ${amount ? "text-emerald-300" : ""}">${money(amount)}</td><td class="py-3 text-right tabular-nums">${pct.toFixed(1)}%</td></tr>`;
+        })
+        .join("");
+      $("payment-table-count").textContent = String(saleMovements.length);
+      $("payment-table-total").textContent = money(totalSales);
+      $("payment-table-percent").textContent = totalSales ? "100%" : "0%";
       const cashInput = $("cash-count") as HTMLInputElement;
       const count = Number(cashInput.value);
       const diff = cashInput.value === "" ? null : count - expectedCash();
       $("cash-difference").textContent = money(diff ?? 0);
-      $("cash-difference").className = `mt-2 text-2xl font-bold ${diff === null ? "" : diff < -0.005 ? "text-red-300" : diff > 0.005 ? "text-amber-300" : "text-emerald-300"}`;
-      $("difference-label").textContent = diff === null ? "Ingresa el conteo físico." : Math.abs(diff) < 0.005 ? "Caja cuadrada." : diff < 0 ? `Faltante de ${money(Math.abs(diff))}` : `Sobrante de ${money(diff)}`;
+      $("cash-difference").className =
+        `mt-2 text-2xl font-bold ${diff === null ? "" : diff < -0.005 ? "text-red-300" : diff > 0.005 ? "text-amber-300" : "text-emerald-300"}`;
+      $("difference-label").textContent =
+        diff === null
+          ? "Ingresa el conteo físico."
+          : Math.abs(diff) < 0.005
+            ? "Caja cuadrada."
+            : diff < 0
+              ? `Faltante de ${money(Math.abs(diff))}`
+              : `Sobrante de ${money(diff)}`;
       const openButton = $("open-cash") as HTMLButtonElement;
       openButton.textContent = opened ? "Caja abierta" : "Abrir caja";
       openButton.disabled = opened || closed;
       ($("close-cash") as HTMLButtonElement).disabled = !opened || closed;
-      (($("movement-form") as HTMLFormElement).querySelector("button[type=submit]") as HTMLButtonElement).disabled = !opened || closed;
+      (
+        ($("movement-form") as HTMLFormElement).querySelector(
+          "button[type=submit]",
+        ) as HTMLButtonElement
+      ).disabled = !opened || closed;
     }
 
-    loginForm.addEventListener("submit", async event => {
+    loginForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (!authClient) {
-        showLogin("No se encontró la configuración de Supabase. Revisa las variables PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_PUBLISHABLE_KEY.");
+        showLogin(
+          "No se encontró la configuración de Supabase. Revisa las variables PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_PUBLISHABLE_KEY.",
+        );
         return;
       }
       loginSubmit.disabled = true;
@@ -296,13 +1037,21 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       try {
         const email = ($("login-email") as HTMLInputElement).value.trim();
         const password = ($("login-password") as HTMLInputElement).value;
-        const { error } = await authClient.auth.signInWithPassword({ email, password });
+        const { error } = await authClient.auth.signInWithPassword({
+          email,
+          password,
+        });
         if (error) throw error;
         loginForm.reset();
         showApp();
         await loadCurrentSession();
+        await loadHistory();
       } catch (error) {
-        showLogin(error instanceof Error ? `No se pudo iniciar sesión o cargar la caja: ${error.message}` : "No se pudo iniciar sesión. Comprueba tus credenciales.");
+        showLogin(
+          error instanceof Error
+            ? `No se pudo iniciar sesión o cargar la caja: ${error.message}`
+            : "No se pudo iniciar sesión. Comprueba tus credenciales.",
+        );
       } finally {
         loginSubmit.disabled = false;
       }
@@ -345,32 +1094,69 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         }
         showApp();
         await loadCurrentSession();
+        await loadHistory();
       } catch (error) {
-        showLogin(error instanceof Error ? `No se pudo recuperar la sesión: ${error.message}` : "No se pudo recuperar la sesión.");
+        showLogin(
+          error instanceof Error
+            ? `No se pudo recuperar la sesión: ${error.message}`
+            : "No se pudo recuperar la sesión.",
+        );
       }
     }
 
-    document.querySelectorAll<HTMLButtonElement>("[data-tab]").forEach(button => button.addEventListener("click", () => {
-      document.querySelectorAll("[data-tab]").forEach(b => b.className = b === button ? "btn btn-primary" : "btn btn-secondary");
-      ["dashboard", "movimientos", "arqueo", "respaldo"].forEach(tab => $(`tab-${tab}`).classList.toggle("hidden", tab !== button.dataset.tab));
-    }));
+    document
+      .querySelectorAll<HTMLButtonElement>("[data-tab]")
+      .forEach((button) =>
+        button.addEventListener("click", () => {
+          document
+            .querySelectorAll("[data-tab]")
+            .forEach(
+              (b) =>
+                (b.className =
+                  b === button ? "btn btn-primary" : "btn btn-secondary"),
+            );
+          [
+            "dashboard",
+            "movimientos",
+            "arqueo",
+            "respaldo",
+            "historial",
+          ].forEach((tab) =>
+            $(`tab-${tab}`).classList.toggle(
+              "hidden",
+              tab !== button.dataset.tab,
+            ),
+          );
+          if (button.dataset.tab === "historial") void loadHistory();
+        }),
+      );
 
     $("open-cash").addEventListener("click", () => {
-      if (!opened && !closed) ($("open-dialog") as HTMLDialogElement).showModal();
+      if (!opened && !closed)
+        ($("open-dialog") as HTMLDialogElement).showModal();
     });
-    $("cancel-open").addEventListener("click", () => ($("open-dialog") as HTMLDialogElement).close());
-    $("open-form").addEventListener("submit", async event => {
+    $("cancel-open").addEventListener("click", () =>
+      ($("open-dialog") as HTMLDialogElement).close(),
+    );
+    $("open-form").addEventListener("submit", async (event) => {
       event.preventDefault();
       if (!authClient || !userId || opened || closed) {
-        $("close-message").textContent = "Inicia sesión y verifica que no exista una caja abierta.";
+        $("close-message").textContent =
+          "Inicia sesión y verifica que no exista una caja abierta.";
         return;
       }
       const amount = Number(($("opening-fund") as HTMLInputElement).value);
       if (!Number.isFinite(amount) || amount < 0) return;
-      const submit = ($("open-form") as HTMLFormElement).querySelector("button[type=submit]") as HTMLButtonElement;
+      const submit = ($("open-form") as HTMLFormElement).querySelector(
+        "button[type=submit]",
+      ) as HTMLButtonElement;
       submit.disabled = true;
       try {
-        const { data, error } = await authClient.from("caja_sessions").insert({ opened_by: userId, opening_fund: amount, status: "open" }).select("id, opening_fund").single();
+        const { data, error } = await authClient
+          .from("caja_sessions")
+          .insert({ opened_by: userId, opening_fund: amount, status: "open" })
+          .select("id, opening_fund")
+          .single();
         if (error) throw error;
         sessionId = data.id as string;
         openingFund = Number(data.opening_fund);
@@ -383,53 +1169,84 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         render();
         setConnection("Supabase conectado · caja abierta", "green");
       } catch (error) {
-        alert(error instanceof Error ? `No se pudo abrir la caja: ${error.message}` : "No se pudo abrir la caja.");
+        alert(
+          error instanceof Error
+            ? `No se pudo abrir la caja: ${error.message}`
+            : "No se pudo abrir la caja.",
+        );
       } finally {
         submit.disabled = false;
       }
     });
 
     $("movement-type").addEventListener("change", () => {
-      const isExpense = ($("movement-type") as HTMLSelectElement).value === "egreso";
+      const isExpense =
+        ($("movement-type") as HTMLSelectElement).value === "egreso";
       $("category-wrap").classList.toggle("hidden", !isExpense);
     });
 
-    $("movement-form").addEventListener("submit", async event => {
+    $("movement-form").addEventListener("submit", async (event) => {
       event.preventDefault();
       if (!authClient || !userId || !sessionId || !opened || closed) return;
       const form = $("movement-form") as HTMLFormElement;
-      const submit = form.querySelector("button[type=submit]") as HTMLButtonElement;
+      const submit = form.querySelector(
+        "button[type=submit]",
+      ) as HTMLButtonElement;
       const amount = Number(($("movement-amount") as HTMLInputElement).value);
-      const description = ($("movement-description") as HTMLInputElement).value.trim();
+      const description = (
+        $("movement-description") as HTMLInputElement
+      ).value.trim();
       if (!Number.isFinite(amount) || amount <= 0 || !description) return;
       if (description.length > 160) {
-        $("movement-message").textContent = "La descripción admite como máximo 160 caracteres.";
+        $("movement-message").textContent =
+          "La descripción admite como máximo 160 caracteres.";
         return;
       }
-      const type = ($("movement-type") as HTMLSelectElement).value as Movement["type"];
+      const type = ($("movement-type") as HTMLSelectElement)
+        .value as Movement["type"];
       const method = ($("movement-method") as HTMLSelectElement).value;
-      const category = type === "egreso" ? ($("movement-category") as HTMLSelectElement).value : "";
-      if (type === "egreso" && method !== "efectivo" && !confirm("Este egreso no reducirá el efectivo físico esperado. ¿Confirmas el medio de salida seleccionado?")) return;
+      const category =
+        type === "egreso"
+          ? ($("movement-category") as HTMLSelectElement).value
+          : "";
+      if (
+        type === "egreso" &&
+        method !== "efectivo" &&
+        !confirm(
+          "Este egreso no reducirá el efectivo físico esperado. ¿Confirmas el medio de salida seleccionado?",
+        )
+      )
+        return;
       submit.disabled = true;
       $("movement-message").textContent = "Guardando movimiento en Supabase…";
       try {
-        const { data, error } = await authClient.from("caja_movements").insert({
-          session_id: sessionId,
-          created_by: userId,
-          movement_type: toDbType(type),
-          amount,
-          description,
-          payment_method: toDbMethod(method),
-          category: category || null,
-        }).select("id, movement_type, amount, description, payment_method, category, created_at").single();
+        const { data, error } = await authClient
+          .from("caja_movements")
+          .insert({
+            session_id: sessionId,
+            created_by: userId,
+            movement_type: toDbType(type),
+            amount,
+            description,
+            payment_method: toDbMethod(method),
+            category: category || null,
+          })
+          .select(
+            "id, movement_type, amount, description, payment_method, category, created_at",
+          )
+          .single();
         if (error) throw error;
         movements.push(fromDbMovement(data as DbMovement));
         form.reset();
         $("movement-type").dispatchEvent(new Event("change"));
-        $("movement-message").textContent = "Movimiento guardado correctamente en Supabase.";
+        $("movement-message").textContent =
+          "Movimiento guardado correctamente en Supabase.";
         render();
       } catch (error) {
-        $("movement-message").textContent = error instanceof Error ? `No se guardó el movimiento: ${error.message}` : "No se pudo guardar el movimiento.";
+        $("movement-message").textContent =
+          error instanceof Error
+            ? `No se guardó el movimiento: ${error.message}`
+            : "No se pudo guardar el movimiento.";
       } finally {
         submit.disabled = !opened || closed;
       }
@@ -443,11 +1260,19 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       }
       setConnection("Comprobando…", "amber");
       try {
-        const { error } = await authClient.from("caja_sessions").select("id", { head: true, count: "exact" }).limit(1);
+        const { error } = await authClient
+          .from("caja_sessions")
+          .select("id", { head: true, count: "exact" })
+          .limit(1);
         if (error) throw error;
         setConnection("API conectada · tabla accesible", "green");
       } catch (error) {
-        setConnection(error instanceof Error ? `Error: ${error.message}` : "No se pudo comprobar", "red");
+        setConnection(
+          error instanceof Error
+            ? `Error: ${error.message}`
+            : "No se pudo comprobar",
+          "red",
+        );
       }
     });
 
@@ -455,51 +1280,87 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       if (!authClient || !sessionId || !opened || closed) return;
       const countedInput = $("cash-count") as HTMLInputElement;
       if (countedInput.value === "") {
-        $("close-message").textContent = "Introduce el efectivo contado antes de cerrar.";
+        $("close-message").textContent =
+          "Introduce el efectivo contado antes de cerrar.";
         return;
       }
       const counted = Number(countedInput.value);
       if (!Number.isFinite(counted) || counted < 0) {
-        $("close-message").textContent = "El efectivo contado debe ser un importe válido y no negativo.";
+        $("close-message").textContent =
+          "El efectivo contado debe ser un importe válido y no negativo.";
         return;
       }
       const closeButton = $("close-cash") as HTMLButtonElement;
       closeButton.disabled = true;
       $("close-message").textContent = "Guardando cierre de caja en Supabase…";
       try {
-        const { data, error } = await authClient.rpc("close_cash_session", { p_session_id: sessionId, p_counted_cash: counted });
+        const { data, error } = await authClient.rpc("close_cash_session", {
+          p_session_id: sessionId,
+          p_counted_cash: counted,
+        });
         if (error) throw error;
         const closedRow = (data ?? {}) as ClosedSession;
         const expected = Number(closedRow.expected_cash ?? expectedCash());
         const finalCount = Number(closedRow.counted_cash ?? counted);
-        const diff = Number(closedRow.difference ?? (finalCount - expected));
+        const diff = Number(closedRow.difference ?? finalCount - expected);
         const date = new Date();
         const dateLocal = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
         report = [
-          "---", `date: "${dateLocal}"`, 'title: "Cierre de caja"', 'currency: "PEN"', `opening_fund: ${openingFund.toFixed(2)}`,
-          `sales_total: ${sum(sales()).toFixed(2)}`, `expenses_total: ${sum(expenses()).toFixed(2)}`, `expected_cash: ${expected.toFixed(2)}`,
-          `counted_cash: ${finalCount.toFixed(2)}`, `difference: ${diff.toFixed(2)}`, "---", "",
-          `# Cierre de caja — ${dateLocal}`, "", "## Resumen", "",
-          `- Fondo inicial: ${money(openingFund)}`, `- Ventas totales: ${money(sum(sales()))}`, `- Egresos totales: ${money(sum(expenses()))}`,
-          `- Efectivo esperado: ${money(expected)}`, `- Efectivo contado: ${money(finalCount)}`, `- Diferencia: ${money(diff)}`, "",
-          "## Movimientos", "", "| Hora | Tipo | Descripción | Categoría | Medio | Monto |", "|---|---|---|---|---|---:|",
-          ...movements.map(m => `| ${new Date(m.createdAt).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" })} | ${m.type} | ${m.description.replaceAll("|", "\\|")} | ${m.category.replaceAll("|", "\\|")} | ${m.method} | ${m.amount.toFixed(2)} |`), "",
-          "> Reporte generado por CajaMaster. Verifica los importes antes de archivarlo.", ""
+          "---",
+          `date: "${dateLocal}"`,
+          'title: "Cierre de caja"',
+          'currency: "PEN"',
+          `opening_fund: ${openingFund.toFixed(2)}`,
+          `sales_total: ${sum(sales()).toFixed(2)}`,
+          `expenses_total: ${sum(expenses()).toFixed(2)}`,
+          `expected_cash: ${expected.toFixed(2)}`,
+          `counted_cash: ${finalCount.toFixed(2)}`,
+          `difference: ${diff.toFixed(2)}`,
+          "---",
+          "",
+          `# Cierre de caja — ${dateLocal}`,
+          "",
+          "## Resumen",
+          "",
+          `- Fondo inicial: ${money(openingFund)}`,
+          `- Ventas totales: ${money(sum(sales()))}`,
+          `- Egresos totales: ${money(sum(expenses()))}`,
+          `- Efectivo esperado: ${money(expected)}`,
+          `- Efectivo contado: ${money(finalCount)}`,
+          `- Diferencia: ${money(diff)}`,
+          "",
+          "## Movimientos",
+          "",
+          "| Hora | Tipo | Descripción | Categoría | Medio | Monto |",
+          "|---|---|---|---|---|---:|",
+          ...movements.map(
+            (m) =>
+              `| ${new Date(m.createdAt).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" })} | ${m.type} | ${m.description.replaceAll("|", "\\|")} | ${m.category.replaceAll("|", "\\|")} | ${m.method} | ${m.amount.toFixed(2)} |`,
+          ),
+          "",
+          "> Reporte generado por CajaMaster. Verifica los importes antes de archivarlo.",
+          "",
         ].join("\n");
         closed = true;
         render();
         $("cash-difference").textContent = money(diff);
-        $("close-message").textContent = `Caja cerrada y guardada en Supabase. Diferencia: ${money(diff)}. Descarga el reporte en la pestaña Respaldo.`;
+        $("close-message").textContent =
+          `Caja cerrada y guardada en Supabase. Diferencia: ${money(diff)}. Descarga el reporte en la pestaña Respaldo.`;
         setConnection("Supabase conectado · caja cerrada", "green");
+        await loadHistory();
       } catch (error) {
-        $("close-message").textContent = error instanceof Error ? `No se pudo cerrar la caja: ${error.message}` : "No se pudo cerrar la caja.";
+        $("close-message").textContent =
+          error instanceof Error
+            ? `No se pudo cerrar la caja: ${error.message}`
+            : "No se pudo cerrar la caja.";
         closeButton.disabled = false;
       }
     });
 
     $("download-report").addEventListener("click", () => {
       if (!report) {
-        $("backup-message").textContent = "Primero registra el arqueo y cierra la caja.";
+        $("backup-message").textContent =
+          "Primero registra el arqueo y cierra la caja.";
         return;
       }
       const blob = new Blob([report], { type: "text/markdown;charset=utf-8" });
@@ -509,7 +1370,30 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       link.download = `cierre-caja-${new Date().toLocaleDateString("en-CA")}.md`;
       link.click();
       URL.revokeObjectURL(url);
-      $("backup-message").textContent = "Reporte descargado. El cierre y sus movimientos también están guardados en Supabase.";
+      $("backup-message").textContent =
+        "Reporte descargado. El cierre y sus movimientos también están guardados en Supabase.";
+    });
+
+    $("history-filter").addEventListener("submit", (event) => {
+      event.preventDefault();
+      void loadHistory();
+    });
+    $("history-refresh").addEventListener("click", () => void loadHistory());
+    $("history-clear").addEventListener("click", () => {
+      ($("history-from") as HTMLInputElement).value = "";
+      ($("history-to") as HTMLInputElement).value = "";
+      void loadHistory();
+    });
+    $("history-rows").addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      const button = target.closest<HTMLButtonElement>(
+        "button[data-history-download]",
+      );
+      if (!button) return;
+      const entry = historyEntries.find(
+        (item) => item.id === button.dataset.historyDownload,
+      );
+      if (entry) downloadHistoryReport(entry);
     });
 
     void initializeAuth();
