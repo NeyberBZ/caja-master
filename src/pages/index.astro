@@ -2,7 +2,31 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 <BaseLayout title="CajaMaster · Cuadre de caja">
-  <main class="mx-auto max-w-7xl px-4 py-6 md:px-8">
+
+  <section id="login-screen" class="mx-auto flex min-h-screen max-w-md items-center px-4 py-10">
+    <form id="login-form" class="panel w-full space-y-5 p-6">
+      <div>
+        <p class="text-xs uppercase tracking-[.22em] text-purple-300">CajaMaster</p>
+        <h1 class="mt-2 text-2xl font-bold">Iniciar sesión</h1>
+        <p class="muted mt-2 text-sm">Accede para administrar tu caja.</p>
+      </div>
+
+      <label class="block text-sm">
+        Correo electrónico
+        <input id="login-email" class="field mt-2" type="email" autocomplete="username" required placeholder="tu@correo.com" />
+      </label>
+
+      <label class="block text-sm">
+        Contraseña
+        <input id="login-password" class="field mt-2" type="password" autocomplete="current-password" required placeholder="Tu contraseña" />
+      </label>
+
+      <button id="login-submit" class="btn btn-primary w-full" type="submit">Entrar</button>
+      <p id="login-message" class="muted text-sm" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <main id="app-shell" class="hidden mx-auto max-w-7xl px-4 py-6 md:px-8">
     <header class="mb-8 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3">
         <div class="grid h-11 w-11 place-items-center rounded-xl bg-purple-500/15 text-xl text-purple-300">◈</div>
@@ -10,6 +34,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       </div>
       <div class="flex items-center gap-2 rounded-full border border-slate-700 px-3 py-2 text-sm">
         <span id="connection-dot" class="h-2 w-2 rounded-full bg-amber-400"></span><span id="connection-status" class="muted">Supabase sin comprobar</span>
+        <button id="logout-button" class="btn btn-secondary" type="button">
+          Cerrar sesión
+        </button>
       </div>
     </header>
 
@@ -67,7 +94,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       <div><p class="muted text-sm">Exportación para guardar en tu repositorio</p><h2 class="text-xl font-semibold">Respaldo Markdown</h2></div>
       <article class="panel p-5"><p class="mb-4 text-sm muted">Se descarga un archivo Markdown con apertura, movimientos, resumen de medios de pago y arqueo. Esta acción descarga el archivo en tu navegador; todavía no crea un commit automático en GitHub.</p><button id="download-report" class="btn btn-primary">Descargar reporte .md</button><p id="backup-message" class="mt-3 text-sm muted" role="status"></p></article>
     </section>
-    <footer class="mt-10 border-t border-slate-800 pt-5 text-xs muted">CajaMaster · Montos en soles peruanos (PEN) · Los datos de esta versión se mantienen en memoria hasta recargar.</footer>
+    <footer class="mt-10 border-t border-slate-800 pt-5 text-xs muted">CajaMaster · Montos en soles peruanos (PEN) · Aperturas y movimientos se guardan en Supabase.</footer>
   </main>
 
   <dialog id="open-dialog" class="w-[min(92vw,440px)] rounded-2xl border border-slate-700 bg-[#161922] p-0 text-white backdrop:bg-black/70">
@@ -77,24 +104,153 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <script>
     import { getSupabaseClient } from "../lib/supabase";
 
-    type Movement = { id: string; type: "venta" | "egreso"; amount: number; description: string; method: string; category: string; createdAt: string };
+    type Movement = {
+      id: string;
+      type: "venta" | "egreso";
+      amount: number;
+      description: string;
+      method: string;
+      category: string;
+      createdAt: string;
+    };
+    type DbMovement = {
+      id: string;
+      movement_type: "sale" | "expense";
+      amount: number | string;
+      description: string;
+      payment_method: "cash" | "yape" | "plin" | "card" | "transfer";
+      category: string | null;
+      created_at: string;
+    };
+    type ClosedSession = {
+      expected_cash?: number | string;
+      counted_cash?: number | string;
+      difference?: number | string;
+    };
+
+    const $ = (id: string) => document.getElementById(id)!;
+    const loginForm = $("login-form") as HTMLFormElement;
+    const loginScreen = $("login-screen");
+    const appShell = $("app-shell");
+    const loginMessage = $("login-message");
+    const loginSubmit = $("login-submit") as HTMLButtonElement;
+    const logoutButton = $("logout-button") as HTMLButtonElement;
+    const authClient = getSupabaseClient();
+
+    let userId: string | null = null;
+    let sessionId: string | null = null;
     let openingFund = 0;
     let opened = false;
     let closed = false;
     let movements: Movement[] = [];
     let report: string | null = null;
+
     const money = (n: number) => new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(n);
-    const $ = (id: string) => document.getElementById(id)!;
     const sum = (items: Movement[]) => items.reduce((total, item) => total + item.amount, 0);
     const sales = () => movements.filter(m => m.type === "venta");
     const expenses = () => movements.filter(m => m.type === "egreso");
-    const expectedCash = () => openingFund + sum(sales().filter(m => m.method === "efectivo")) - sum(expenses().filter(m => m.method === "efectivo"));
+    const expectedCash = () => openingFund
+      + sum(sales().filter(m => m.method === "efectivo"))
+      - sum(expenses().filter(m => m.method === "efectivo"));
     const safe = (value: string) => value.replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[char]!));
+
+    const toDbType = (type: Movement["type"]): "sale" | "expense" => type === "venta" ? "sale" : "expense";
+    const fromDbType = (type: DbMovement["movement_type"]): Movement["type"] => type === "sale" ? "venta" : "egreso";
+    const toDbMethod = (method: string): string => ({ efectivo: "cash", yape: "yape", plin: "plin", tarjeta: "card", transferencia: "transfer" }[method] ?? "cash");
+    const fromDbMethod = (method: DbMovement["payment_method"]): string => ({ cash: "efectivo", yape: "yape", plin: "plin", card: "tarjeta", transfer: "transferencia" }[method] ?? method);
+    const fromDbMovement = (row: DbMovement): Movement => ({
+      id: row.id,
+      type: fromDbType(row.movement_type),
+      amount: Number(row.amount),
+      description: row.description,
+      method: fromDbMethod(row.payment_method),
+      category: row.category ?? "",
+      createdAt: row.created_at,
+    });
+
+    function setConnection(message: string, tone: "green" | "amber" | "red" = "amber") {
+      $("connection-status").textContent = message;
+      const dot = $("connection-dot");
+      dot.className = `h-2 w-2 rounded-full ${tone === "green" ? "bg-emerald-400" : tone === "red" ? "bg-red-400" : "bg-amber-400"}`;
+    }
+
+    function showLogin(message = "") {
+      loginScreen.classList.remove("hidden");
+      appShell.classList.add("hidden");
+      loginMessage.textContent = message;
+    }
+
+    function showApp() {
+      loginScreen.classList.add("hidden");
+      appShell.classList.remove("hidden");
+    }
+
+    function resetSessionState() {
+      userId = null;
+      sessionId = null;
+      openingFund = 0;
+      opened = false;
+      closed = false;
+      movements = [];
+      report = null;
+      const count = $("cash-count") as HTMLInputElement;
+      count.value = "";
+      $("movement-message").textContent = "";
+      $("close-message").textContent = "";
+      $("backup-message").textContent = "";
+      render();
+    }
+
+    async function loadCurrentSession() {
+      if (!authClient) throw new Error("No está configurado el cliente de Supabase.");
+      const { data: userData, error: userError } = await authClient.auth.getUser();
+      if (userError) throw userError;
+      if (!userData.user) throw new Error("La sesión de usuario ya no está activa.");
+      userId = userData.user.id;
+
+      const { data: session, error: sessionError } = await authClient
+        .from("caja_sessions")
+        .select("id, opened_by, opening_fund, status, opened_at")
+        .eq("opened_by", userId)
+        .eq("status", "open")
+        .order("opened_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (sessionError) throw sessionError;
+
+      movements = [];
+      report = null;
+      closed = false;
+      if (!session) {
+        sessionId = null;
+        openingFund = 0;
+        opened = false;
+        render();
+        setConnection("Supabase conectado · sin caja abierta", "green");
+        return;
+      }
+
+      sessionId = session.id as string;
+      openingFund = Number(session.opening_fund ?? 0);
+      opened = true;
+      const { data: rows, error: movementError } = await authClient
+        .from("caja_movements")
+        .select("id, movement_type, amount, description, payment_method, category, created_at")
+        .eq("session_id", sessionId)
+        .order("created_at", { ascending: true });
+      if (movementError) throw movementError;
+      movements = ((rows ?? []) as DbMovement[]).map(fromDbMovement);
+      render();
+      setConnection("Supabase conectado · caja recuperada", "green");
+    }
 
     function renderRows(target: string, items: Movement[]) {
       const tbody = $(target);
-      if (!items.length) { tbody.innerHTML = '<tr><td colspan="5" class="py-7 text-center muted">No hay movimientos registrados.</td></tr>'; return; }
-      tbody.innerHTML = items.slice().reverse().map(m => `<tr class="border-b border-slate-800"><td class="py-3 pr-3 muted">${new Date(m.createdAt).toLocaleTimeString("es-PE",{hour:"2-digit",minute:"2-digit"})}</td><td class="py-3 pr-3">${m.type === "venta" ? "Venta" : "Egreso"}</td><td class="py-3 pr-3">${safe(m.description)}${m.category ? `<span class="block text-xs muted">${safe(m.category)}</span>` : ""}</td><td class="py-3 pr-3">${safe(m.method)}</td><td class="py-3 text-right ${m.type === "venta" ? "text-emerald-300" : "text-orange-300"}">${m.type === "venta" ? "+" : "−"}${money(m.amount)}</td></tr>`).join("");
+      if (!items.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="py-7 text-center muted">No hay movimientos registrados.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = items.slice().reverse().map(m => `<tr class="border-b border-slate-800"><td class="py-3 pr-3 muted">${new Date(m.createdAt).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" })}</td><td class="py-3 pr-3">${m.type === "venta" ? "Venta" : "Egreso"}</td><td class="py-3 pr-3">${safe(m.description)}${m.category ? `<span class="block text-xs muted">${safe(m.category)}</span>` : ""}</td><td class="py-3 pr-3">${safe(m.method)}</td><td class="py-3 text-right ${m.type === "venta" ? "text-emerald-300" : "text-orange-300"}">${m.type === "venta" ? "+" : "−"}${money(m.amount)}</td></tr>`).join("");
     }
 
     function render() {
@@ -105,104 +261,257 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       $("expected-cash").textContent = money(expectedCash());
       $("movement-count").textContent = `${movements.length} registros`;
       const recent = movements.slice(-5).reverse();
-      $("recent-rows").innerHTML = recent.length ? recent.map(m => `<tr class="border-b border-slate-800"><td class="py-3 pr-3">${m.type === "venta" ? "Venta" : "Egreso"}</td><td class="py-3 pr-3">${safe(m.description)}</td><td class="py-3 pr-3">${safe(m.method)}</td><td class="py-3 text-right">${money(m.amount)}</td></tr>`).join("") : '<tr><td colspan="4" class="py-8 text-center muted">Abre la caja y registra el primer movimiento.</td></tr>';
+      $("recent-rows").innerHTML = recent.length
+        ? recent.map(m => `<tr class="border-b border-slate-800"><td class="py-3 pr-3">${m.type === "venta" ? "Venta" : "Egreso"}</td><td class="py-3 pr-3">${safe(m.description)}</td><td class="py-3 pr-3">${safe(m.method)}</td><td class="py-3 text-right">${money(m.amount)}</td></tr>`).join("")
+        : '<tr><td colspan="4" class="py-8 text-center muted">Abre la caja y registra el primer movimiento.</td></tr>';
       renderRows("all-rows", movements);
-      const methods = ["efectivo","yape","plin","tarjeta","transferencia"];
+      const methods = ["efectivo", "yape", "plin", "tarjeta", "transferencia"];
+      const totalSales = sum(sales());
       $("payment-summary").innerHTML = methods.map(method => {
         const amount = sum(sales().filter(m => m.method === method));
-        const total = sum(sales());
-        const pct = total ? amount / total * 100 : 0;
-        return `<div><div class="mb-2 flex justify-between text-sm"><span>${method[0].toUpperCase()+method.slice(1)}</span><span>${money(amount)}</span></div><div class="h-2 overflow-hidden rounded-full bg-slate-800"><div class="h-full rounded-full bg-purple-400" style="width:${pct}%"></div></div></div>`;
+        const pct = totalSales ? amount / totalSales * 100 : 0;
+        return `<div><div class="mb-2 flex justify-between text-sm"><span>${method[0].toUpperCase() + method.slice(1)}</span><span>${money(amount)}</span></div><div class="h-2 overflow-hidden rounded-full bg-slate-800"><div class="h-full rounded-full bg-purple-400" style="width:${pct}%"></div></div></div>`;
       }).join("");
-      const count = Number(($("cash-count") as HTMLInputElement).value);
-      const diff = ($("cash-count") as HTMLInputElement).value === "" ? null : count - expectedCash();
+      const cashInput = $("cash-count") as HTMLInputElement;
+      const count = Number(cashInput.value);
+      const diff = cashInput.value === "" ? null : count - expectedCash();
       $("cash-difference").textContent = money(diff ?? 0);
       $("cash-difference").className = `mt-2 text-2xl font-bold ${diff === null ? "" : diff < -0.005 ? "text-red-300" : diff > 0.005 ? "text-amber-300" : "text-emerald-300"}`;
       $("difference-label").textContent = diff === null ? "Ingresa el conteo físico." : Math.abs(diff) < 0.005 ? "Caja cuadrada." : diff < 0 ? `Faltante de ${money(Math.abs(diff))}` : `Sobrante de ${money(diff)}`;
-      $("open-cash").textContent = closed ? "Caja cerrada" : opened ? "Caja abierta" : "Abrir caja";
-      ($("open-cash") as HTMLButtonElement).disabled = opened || closed;
+      const openButton = $("open-cash") as HTMLButtonElement;
+      openButton.textContent = opened ? "Caja abierta" : "Abrir caja";
+      openButton.disabled = opened || closed;
       ($("close-cash") as HTMLButtonElement).disabled = !opened || closed;
-      ($("movement-form").querySelector("button[type=submit]") as HTMLButtonElement).disabled = !opened || closed;
+      (($("movement-form") as HTMLFormElement).querySelector("button[type=submit]") as HTMLButtonElement).disabled = !opened || closed;
+    }
+
+    loginForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!authClient) {
+        showLogin("No se encontró la configuración de Supabase. Revisa las variables PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_PUBLISHABLE_KEY.");
+        return;
+      }
+      loginSubmit.disabled = true;
+      loginMessage.textContent = "Verificando acceso…";
+      try {
+        const email = ($("login-email") as HTMLInputElement).value.trim();
+        const password = ($("login-password") as HTMLInputElement).value;
+        const { error } = await authClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        loginForm.reset();
+        showApp();
+        await loadCurrentSession();
+      } catch (error) {
+        showLogin(error instanceof Error ? `No se pudo iniciar sesión o cargar la caja: ${error.message}` : "No se pudo iniciar sesión. Comprueba tus credenciales.");
+      } finally {
+        loginSubmit.disabled = false;
+      }
+    });
+
+    logoutButton.addEventListener("click", async () => {
+      if (!authClient) return;
+      logoutButton.disabled = true;
+      try {
+        const { error } = await authClient.auth.signOut();
+        if (error) throw error;
+        resetSessionState();
+        showLogin();
+        setConnection("Sesión cerrada", "amber");
+      } catch {
+        alert("No se pudo cerrar la sesión. Inténtalo nuevamente.");
+      } finally {
+        logoutButton.disabled = false;
+      }
+    });
+
+    async function initializeAuth() {
+      if (!authClient) {
+        showLogin("No se encontró la configuración de Supabase.");
+        return;
+      }
+      authClient.auth.onAuthStateChange((event, session) => {
+        if (event === "SIGNED_OUT" || !session) {
+          resetSessionState();
+          showLogin();
+        }
+      });
+      showLogin("Comprobando sesión…");
+      try {
+        const { data, error } = await authClient.auth.getSession();
+        if (error) throw error;
+        if (!data.session) {
+          showLogin();
+          return;
+        }
+        showApp();
+        await loadCurrentSession();
+      } catch (error) {
+        showLogin(error instanceof Error ? `No se pudo recuperar la sesión: ${error.message}` : "No se pudo recuperar la sesión.");
+      }
     }
 
     document.querySelectorAll<HTMLButtonElement>("[data-tab]").forEach(button => button.addEventListener("click", () => {
       document.querySelectorAll("[data-tab]").forEach(b => b.className = b === button ? "btn btn-primary" : "btn btn-secondary");
-      ["dashboard","movimientos","arqueo","respaldo"].forEach(tab => $(`tab-${tab}`).classList.toggle("hidden", tab !== button.dataset.tab));
+      ["dashboard", "movimientos", "arqueo", "respaldo"].forEach(tab => $(`tab-${tab}`).classList.toggle("hidden", tab !== button.dataset.tab));
     }));
-    $("open-cash").addEventListener("click", () => ($("open-dialog") as HTMLDialogElement).showModal());
-    $("cancel-open").addEventListener("click", () => ($("open-dialog") as HTMLDialogElement).close());
-    $("open-form").addEventListener("submit", event => {
-      event.preventDefault();
-      openingFund = Math.max(0, Number(($("opening-fund") as HTMLInputElement).value));
-      opened = true; closed = false; ($("open-dialog") as HTMLDialogElement).close(); render();
+
+    $("open-cash").addEventListener("click", () => {
+      if (!opened && !closed) ($("open-dialog") as HTMLDialogElement).showModal();
     });
+    $("cancel-open").addEventListener("click", () => ($("open-dialog") as HTMLDialogElement).close());
+    $("open-form").addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!authClient || !userId || opened || closed) {
+        $("close-message").textContent = "Inicia sesión y verifica que no exista una caja abierta.";
+        return;
+      }
+      const amount = Number(($("opening-fund") as HTMLInputElement).value);
+      if (!Number.isFinite(amount) || amount < 0) return;
+      const submit = ($("open-form") as HTMLFormElement).querySelector("button[type=submit]") as HTMLButtonElement;
+      submit.disabled = true;
+      try {
+        const { data, error } = await authClient.from("caja_sessions").insert({ opened_by: userId, opening_fund: amount, status: "open" }).select("id, opening_fund").single();
+        if (error) throw error;
+        sessionId = data.id as string;
+        openingFund = Number(data.opening_fund);
+        movements = [];
+        report = null;
+        opened = true;
+        closed = false;
+        ($("open-dialog") as HTMLDialogElement).close();
+        $("close-message").textContent = "";
+        render();
+        setConnection("Supabase conectado · caja abierta", "green");
+      } catch (error) {
+        alert(error instanceof Error ? `No se pudo abrir la caja: ${error.message}` : "No se pudo abrir la caja.");
+      } finally {
+        submit.disabled = false;
+      }
+    });
+
     $("movement-type").addEventListener("change", () => {
       const isExpense = ($("movement-type") as HTMLSelectElement).value === "egreso";
       $("category-wrap").classList.toggle("hidden", !isExpense);
     });
-    $("movement-form").addEventListener("submit", event => {
+
+    $("movement-form").addEventListener("submit", async event => {
       event.preventDefault();
-      if (!opened || closed) return;
+      if (!authClient || !userId || !sessionId || !opened || closed) return;
+      const form = $("movement-form") as HTMLFormElement;
+      const submit = form.querySelector("button[type=submit]") as HTMLButtonElement;
       const amount = Number(($("movement-amount") as HTMLInputElement).value);
       const description = ($("movement-description") as HTMLInputElement).value.trim();
       if (!Number.isFinite(amount) || amount <= 0 || !description) return;
-      const type = ($("movement-type") as HTMLSelectElement).value as "venta" | "egreso";
+      if (description.length > 160) {
+        $("movement-message").textContent = "La descripción admite como máximo 160 caracteres.";
+        return;
+      }
+      const type = ($("movement-type") as HTMLSelectElement).value as Movement["type"];
       const method = ($("movement-method") as HTMLSelectElement).value;
+      const category = type === "egreso" ? ($("movement-category") as HTMLSelectElement).value : "";
       if (type === "egreso" && method !== "efectivo" && !confirm("Este egreso no reducirá el efectivo físico esperado. ¿Confirmas el medio de salida seleccionado?")) return;
-      movements.push({ id: crypto.randomUUID(), type, amount, description, method, category: type === "egreso" ? ($("movement-category") as HTMLSelectElement).value : "", createdAt: new Date().toISOString() });
-      ($("movement-form") as HTMLFormElement).reset();
-      $("movement-type").dispatchEvent(new Event("change"));
-      $("movement-message").textContent = "Movimiento añadido a la sesión actual. En esta versión aún no se ha guardado en Supabase.";
-      render();
-    });
-    $("cash-count").addEventListener("input", render);
-    $("check-supabase").addEventListener("click", async () => {
-      const dot = $("connection-dot");
-      const status = $("connection-status");
-      const client = getSupabaseClient();
-      if (!client) { status.textContent = "Faltan variables de entorno"; dot.className = "h-2 w-2 rounded-full bg-amber-400"; return; }
-      status.textContent = "Comprobando…"; dot.className = "h-2 w-2 rounded-full bg-amber-400";
+      submit.disabled = true;
+      $("movement-message").textContent = "Guardando movimiento en Supabase…";
       try {
-        const { error } = await client.from("caja_sessions").select("id", { head: true, count: "exact" }).limit(1);
+        const { data, error } = await authClient.from("caja_movements").insert({
+          session_id: sessionId,
+          created_by: userId,
+          movement_type: toDbType(type),
+          amount,
+          description,
+          payment_method: toDbMethod(method),
+          category: category || null,
+        }).select("id, movement_type, amount, description, payment_method, category, created_at").single();
         if (error) throw error;
-        status.textContent = "API conectada · tabla accesible"; dot.className = "h-2 w-2 rounded-full bg-emerald-400";
+        movements.push(fromDbMovement(data as DbMovement));
+        form.reset();
+        $("movement-type").dispatchEvent(new Event("change"));
+        $("movement-message").textContent = "Movimiento guardado correctamente en Supabase.";
+        render();
       } catch (error) {
-        status.textContent = error instanceof Error ? `Conexión: ${error.message}` : "No se pudo comprobar";
-        dot.className = "h-2 w-2 rounded-full bg-red-400";
+        $("movement-message").textContent = error instanceof Error ? `No se guardó el movimiento: ${error.message}` : "No se pudo guardar el movimiento.";
+      } finally {
+        submit.disabled = !opened || closed;
       }
     });
-    $("close-cash").addEventListener("click", () => {
-      if (!opened || closed) return;
-      const countedInput = $("cash-count") as HTMLInputElement;
-      if (countedInput.value === "") { $("close-message").textContent = "Introduce el efectivo contado antes de cerrar."; return; }
-      const counted = Number(countedInput.value);
-      const expected = expectedCash();
-      const date = new Date();
-      const dateLocal = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
-      const diff = counted - expected;
-      report = [
-        "---", `date: "${dateLocal}"`, 'title: "Cierre de caja"', `currency: "PEN"`, `opening_fund: ${openingFund.toFixed(2)}`,
-        `sales_total: ${sum(sales()).toFixed(2)}`, `expenses_total: ${sum(expenses()).toFixed(2)}`, `expected_cash: ${expected.toFixed(2)}`,
-        `counted_cash: ${counted.toFixed(2)}`, `difference: ${diff.toFixed(2)}`, "---", "",
-        `# Cierre de caja — ${dateLocal}`, "", "## Resumen", "",
-        `- Fondo inicial: ${money(openingFund)}`, `- Ventas totales: ${money(sum(sales()))}`, `- Egresos totales: ${money(sum(expenses()))}`,
-        `- Efectivo esperado: ${money(expected)}`, `- Efectivo contado: ${money(counted)}`, `- Diferencia: ${money(diff)}`, "",
-        "## Movimientos", "", "| Hora | Tipo | Descripción | Categoría | Medio | Monto |", "|---|---|---|---|---|---:|",
-        ...movements.map(m => `| ${new Date(m.createdAt).toLocaleTimeString("es-PE",{hour:"2-digit",minute:"2-digit"})} | ${m.type} | ${m.description.replaceAll("|","\\|")} | ${m.category} | ${m.method} | ${m.amount.toFixed(2)} |`), "",
-        "> Reporte generado por CajaMaster. Verifica los importes antes de archivarlo.", ""
-      ].join("\n");
-      closed = true; render();
-      $("close-message").textContent = `Caja cerrada. Diferencia: ${money(diff)}. Descarga el reporte en la pestaña Respaldo.`;
+
+    $("cash-count").addEventListener("input", render);
+    $("check-supabase").addEventListener("click", async () => {
+      if (!authClient) {
+        setConnection("Faltan variables de entorno", "amber");
+        return;
+      }
+      setConnection("Comprobando…", "amber");
+      try {
+        const { error } = await authClient.from("caja_sessions").select("id", { head: true, count: "exact" }).limit(1);
+        if (error) throw error;
+        setConnection("API conectada · tabla accesible", "green");
+      } catch (error) {
+        setConnection(error instanceof Error ? `Error: ${error.message}` : "No se pudo comprobar", "red");
+      }
     });
+
+    $("close-cash").addEventListener("click", async () => {
+      if (!authClient || !sessionId || !opened || closed) return;
+      const countedInput = $("cash-count") as HTMLInputElement;
+      if (countedInput.value === "") {
+        $("close-message").textContent = "Introduce el efectivo contado antes de cerrar.";
+        return;
+      }
+      const counted = Number(countedInput.value);
+      if (!Number.isFinite(counted) || counted < 0) {
+        $("close-message").textContent = "El efectivo contado debe ser un importe válido y no negativo.";
+        return;
+      }
+      const closeButton = $("close-cash") as HTMLButtonElement;
+      closeButton.disabled = true;
+      $("close-message").textContent = "Guardando cierre de caja en Supabase…";
+      try {
+        const { data, error } = await authClient.rpc("close_cash_session", { p_session_id: sessionId, p_counted_cash: counted });
+        if (error) throw error;
+        const closedRow = (data ?? {}) as ClosedSession;
+        const expected = Number(closedRow.expected_cash ?? expectedCash());
+        const finalCount = Number(closedRow.counted_cash ?? counted);
+        const diff = Number(closedRow.difference ?? (finalCount - expected));
+        const date = new Date();
+        const dateLocal = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+        report = [
+          "---", `date: "${dateLocal}"`, 'title: "Cierre de caja"', 'currency: "PEN"', `opening_fund: ${openingFund.toFixed(2)}`,
+          `sales_total: ${sum(sales()).toFixed(2)}`, `expenses_total: ${sum(expenses()).toFixed(2)}`, `expected_cash: ${expected.toFixed(2)}`,
+          `counted_cash: ${finalCount.toFixed(2)}`, `difference: ${diff.toFixed(2)}`, "---", "",
+          `# Cierre de caja — ${dateLocal}`, "", "## Resumen", "",
+          `- Fondo inicial: ${money(openingFund)}`, `- Ventas totales: ${money(sum(sales()))}`, `- Egresos totales: ${money(sum(expenses()))}`,
+          `- Efectivo esperado: ${money(expected)}`, `- Efectivo contado: ${money(finalCount)}`, `- Diferencia: ${money(diff)}`, "",
+          "## Movimientos", "", "| Hora | Tipo | Descripción | Categoría | Medio | Monto |", "|---|---|---|---|---|---:|",
+          ...movements.map(m => `| ${new Date(m.createdAt).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" })} | ${m.type} | ${m.description.replaceAll("|", "\\|")} | ${m.category.replaceAll("|", "\\|")} | ${m.method} | ${m.amount.toFixed(2)} |`), "",
+          "> Reporte generado por CajaMaster. Verifica los importes antes de archivarlo.", ""
+        ].join("\n");
+        closed = true;
+        render();
+        $("cash-difference").textContent = money(diff);
+        $("close-message").textContent = `Caja cerrada y guardada en Supabase. Diferencia: ${money(diff)}. Descarga el reporte en la pestaña Respaldo.`;
+        setConnection("Supabase conectado · caja cerrada", "green");
+      } catch (error) {
+        $("close-message").textContent = error instanceof Error ? `No se pudo cerrar la caja: ${error.message}` : "No se pudo cerrar la caja.";
+        closeButton.disabled = false;
+      }
+    });
+
     $("download-report").addEventListener("click", () => {
-      if (!report) { $("backup-message").textContent = "Primero registra el arqueo y cierra la caja."; return; }
+      if (!report) {
+        $("backup-message").textContent = "Primero registra el arqueo y cierra la caja.";
+        return;
+      }
       const blob = new Blob([report], { type: "text/markdown;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.href = url; link.download = `cierre-caja-${new Date().toLocaleDateString("en-CA")}.md`; link.click();
+      link.href = url;
+      link.download = `cierre-caja-${new Date().toLocaleDateString("en-CA")}.md`;
+      link.click();
       URL.revokeObjectURL(url);
-      $("backup-message").textContent = "Reporte descargado. Súbelo a GitHub manualmente; la publicación automática aún no está implementada.";
+      $("backup-message").textContent = "Reporte descargado. El cierre y sus movimientos también están guardados en Supabase.";
     });
-    render();
+
+    void initializeAuth();
   </script>
 </BaseLayout>
